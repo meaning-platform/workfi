@@ -5,11 +5,11 @@ import Link from 'next/link';
 import { Account } from '../components/Account';
 import { NetworkSwitcher } from '../components/NetworkSwitcher';
 import { useIsMounted } from '../components/hooks/useIsMounted';
-import { useAccount } from 'wagmi';
+import { useConnectWallet } from '@web3-onboard/react'
+
 
 const Home: NextPage = () => {
-	const isMounted = useIsMounted();
-	const { data } = useAccount();
+
 	return (
 		<div className="flex min-h-screen flex-col justify-start py-2">
 			<Head>
