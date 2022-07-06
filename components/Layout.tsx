@@ -1,4 +1,4 @@
-import { useConnectWallet, useWallets, useAccountCenter } from '@web3-onboard/react'
+import { useConnectWallet } from '@web3-onboard/react'
 
 import { useIsMounted } from '../components/hooks/useIsMounted';
 import Link from 'next/link';
@@ -10,11 +10,7 @@ type Props = {
 export default function Layout({ children }: Props) {
 	const isMounted = useIsMounted();
 	const [{ wallet, connecting }, connect, disconnect] = useConnectWallet()
-	const connectedWallets = useWallets()
-	console.log('connectedWallets', connectedWallets)
-	console.log('wallet', wallet)
-	const updateAccountCenter = useAccountCenter()
-	updateAccountCenter({minimal: true})
+
 	return (
 		<div className="min-h-full bg-stone-50">
 			{/* Navigation */}
