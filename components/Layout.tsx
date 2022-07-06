@@ -12,6 +12,8 @@ export default function Layout({ children }: Props) {
 	const isMounted = useIsMounted();
 	const [{ wallet, connecting }, connect, disconnect] = useConnectWallet()
 	const connectedWallets = useWallets()
+	console.log('connectedWallets', connectedWallets)
+	console.log('wallet', wallet)
 	const updateAccountCenter = useAccountCenter()
 	updateAccountCenter({minimal: true})
 	return (
@@ -46,6 +48,9 @@ export default function Layout({ children }: Props) {
 						<Link href={`/manageMySponsorship`}>
 							<a className="mr-5 font-bold text-emerald-400 hover:text-emerald-600">Dashboard</a>
 						</Link>
+
+					</nav>
+					{!wallet && (
 						<button
 								className="mt-6 inline-flex items-center justify-center rounded-md border border-transparent bg-emerald-600 py-2 px-4 font-bold text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 md:mt-0"
 								disabled={connecting}
@@ -53,7 +58,8 @@ export default function Layout({ children }: Props) {
 							>
 								{connecting ? 'connecting' : wallet ? 'disconnect' : 'connect'}
 							</button>
-					</nav>
+						)
+						}
 				</div>
 			</header>
 

@@ -1,11 +1,6 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import Image from 'next/image';
-import Link from 'next/link';
-import { Account } from '../components/Account';
-import { NetworkSwitcher } from '../components/NetworkSwitcher';
-import { useIsMounted } from '../components/hooks/useIsMounted';
-import { useConnectWallet } from '@web3-onboard/react'
+
 
 
 const Home: NextPage = () => {
