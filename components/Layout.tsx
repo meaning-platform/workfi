@@ -1,4 +1,3 @@
-// import { useConnect, useDisconnect, useNetwork } from 'wagmi';
 import { useConnectWallet, useWallets, useAccountCenter } from '@web3-onboard/react'
 
 import { useIsMounted } from '../components/hooks/useIsMounted';

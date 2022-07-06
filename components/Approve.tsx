@@ -2,7 +2,6 @@ import { Dialog, Transition } from '@headlessui/react'
 import { useRef, Fragment } from 'react'
 import { ShieldCheckIcon } from '@heroicons/react/outline'
 import { LoanOpportunity } from '../pages/api/data/LoanOpportunity'
-import { WriteContractConfig } from '@wagmi/core';
 
 type Props = {
   message: string

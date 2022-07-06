@@ -1,9 +1,7 @@
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
-// import { providers } from 'ethers'
 import NextHead from 'next/head'
 
-// import { Provider, chain, createClient, defaultChains } from 'wagmi'
 import { init, useConnectWallet } from '@web3-onboard/react'
 import injectedModule from '@web3-onboard/injected-wallets'
 import { ethers } from 'ethers'
