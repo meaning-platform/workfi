@@ -3,9 +3,9 @@ import type { LoanOpportunity } from '../api/data/LoanOpportunity';
 import { defaultBounty } from '../api/data/mockData';
 import { useEffect, useState } from 'react';
 import { Approve } from '../../components/Approve';
-import DummyWorkFi from '../../artifacts/contracts/DummyWorkFi.sol/DummyWorkFi.json';
+import WorkFi from '../../artifacts/contracts/WorkFi.sol/WorkFi.json';
 import { useContractWrite } from 'wagmi';
-import { contractAddressMumbai } from '../../config';
+import { contractAddress } from '../../config';
 import { WriteContractConfig } from '@wagmi/core';
 
 //Opportunity Participation Form
@@ -37,8 +37,8 @@ const OpportunityParticipation: NextPage = () => {
 
 	const { write, data, error, isLoading, isError, isSuccess } = useContractWrite(
 		{
-			addressOrName: contractAddressMumbai,
-			contractInterface: DummyWorkFi.abi,
+			addressOrName: contractAddress,
+			contractInterface: WorkFi.abi,
 		},
 		'invest'
 	);
@@ -183,7 +183,7 @@ const OpportunityParticipation: NextPage = () => {
 									<div className="w-1/4 rounded-l-full bg-emerald-600 p-0.5 text-center text-xs leading-none text-emerald-100">
 										25%
 									</div>
-								</div>
+								</div>F
 								<div className="mt-3 flex flex-row items-center justify-around text-sm text-stone-600">
 									<span className="w-40 text-center">40 days, 100% left</span>
 									<span className="w-40  rounded-full bg-slate-300 px-4 py-2 text-center font-bold opacity-50">

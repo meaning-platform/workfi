@@ -3,9 +3,9 @@ import type { LoanOpportunity } from '../api/data/LoanOpportunity';
 import { defaultBounty } from '../api/data/mockData';
 import { useEffect, useState } from 'react';
 import { Approve } from '../../components/Approve';
-import DummyWorkFi from '../../artifacts/contracts/DummyWorkFi.sol/DummyWorkFi.json';
+import WorkFi from '../../artifacts/contracts/WorkFi.sol/WorkFi.json';
 import { useContractWrite } from 'wagmi';
-import { contractAddressMumbai } from '../../config';
+import { contractAddress } from '../../config';
 import { ethers } from 'ethers';
 import { Bounty, Status } from '../api/data/Bounty';
 import { WriteContractConfig } from '@wagmi/core';
@@ -43,8 +43,8 @@ const OpportunityParticipation: NextPage<Props> = ({bounty}: Props) => {
 
 	const { write, data, error, isLoading, isError, isSuccess } = useContractWrite(
 		{
-			addressOrName: contractAddressMumbai,
-			contractInterface: DummyWorkFi.abi,
+			addressOrName: contractAddress,
+			contractInterface: WorkFi.abi,
 		},
 		'invest'
 	);
@@ -228,6 +228,7 @@ const OpportunityParticipation: NextPage<Props> = ({bounty}: Props) => {
 };
 
 export async function getServerSideProps({ params }: { params: any }) {
+	console.log(process.env.ENVIRONMENT);
 	const bountyId = parseInt(params.bountyId);
 	let provider;
 	if (process.env.ENVIRONMENT === 'local') {
@@ -238,7 +239,7 @@ export async function getServerSideProps({ params }: { params: any }) {
 		provider = new ethers.providers.JsonRpcProvider('https://polygon-rpc.com/');
 	}
 
-	const contract = new ethers.Contract(contractAddressMumbai, DummyWorkFi.abi, provider);
+	const contract = new ethers.Contract(contractAddress, WorkFi.abi, provider);
 	console.log('contract')
 	const data = await contract.getBounty(bountyId);
 	console.log('data', data)

@@ -1,10 +1,9 @@
 import type { NextPage } from 'next/types';
 import { useContractWrite, useNetwork } from 'wagmi';
 
-import { contractAddressMumbai } from '../config';
-const contractAddress = contractAddressMumbai;
+import { contractAddress } from '../config';
 
-import Greeter from '../artifacts/contracts/DummyWorkFi.sol/DummyWorkFi.json';
+import Greeter from '../artifacts/contracts/WorkFi.sol/WorkFi.json';
 import { useState } from 'react';
 
 interface Props {

@@ -3,9 +3,9 @@ import type { LoanOpportunity } from './api/data/LoanOpportunity';
 import { defaultBounty } from './api/data/mockData';
 import { useEffect, useState } from 'react';
 import { Approve } from '../components/Approve';
-import DummyWorkFi from '../artifacts/contracts/DummyWorkFi.sol/DummyWorkFi.json';
+import WorkFi from '../artifacts/contracts/WorkFi.sol/WorkFi.json';
 import { useContractWrite } from 'wagmi';
-import { contractAddressMumbai } from '../config';
+import { contractAddress } from '../config';
 
 //Opportunity Creation Form
 // This page is used to create a new opportunity, bounty data are mocked from the mockData.ts file
@@ -37,8 +37,8 @@ const CreateOpportunity: NextPage = () => {
 
 	const { write, data, error, isLoading, isError, isSuccess } = useContractWrite(
 		{
-			addressOrName: contractAddressMumbai,
-			contractInterface: DummyWorkFi.abi,
+			addressOrName: contractAddress,
+			contractInterface: WorkFi.abi,
 		},
 		'createBounty'
 	);
