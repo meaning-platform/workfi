@@ -1,14 +1,15 @@
+import React, { useContext } from 'react';
 import type { NextPage } from 'next/types';
 import type { LoanOpportunity } from '../api/data/LoanOpportunity';
 import { defaultBounty } from '../api/data/mockData';
 import { useEffect, useState } from 'react';
 import { Approve } from '../../components/Approve';
 import DummyWorkFi from '../../artifacts/contracts/DummyWorkFi.sol/DummyWorkFi.json';
-import { useContractWrite } from 'wagmi';
 import { contractAddressMumbai } from '../../config';
 import { ethers } from 'ethers';
 import { Bounty, Status } from '../api/data/Bounty';
-import { WriteContractConfig } from '@wagmi/core';
+import { Web3Context } from '../context/web3Context';
+import { Web3ContextType } from '../types';
 
 interface Props {
 	bounty: Bounty
@@ -29,6 +30,8 @@ const OpportunityParticipation: NextPage<Props> = ({bounty}: Props) => {
 		stableRatio: 20,
 	} as LoanOpportunity);
 	const [openDialog, setOpenDialog] = useState(false);
+	const Web3 = React.useContext(Web3Context) as Web3ContextType;
+	const opportunityContract  = new ethers.Contract( contractAddressMumbai, DummyWorkFi.abi, Web3.Signer);
 
 	function setRatio(ratio: number) {
 		if (ratio > 0) {
@@ -41,24 +44,19 @@ const OpportunityParticipation: NextPage<Props> = ({bounty}: Props) => {
 		}
 	}
 
-	const { write, data, error, isLoading, isError, isSuccess } = useContractWrite(
-		{
-			addressOrName: contractAddressMumbai,
-			contractInterface: DummyWorkFi.abi,
-		},
-		'invest'
-	);
 
 	const [callSmartContract, setCallSmartContract] = useState<(overrideConfig?: WriteContractConfig | undefined) => void>(() => {});
 	useEffect(()=>{
 		setCallSmartContract(() => {
-			return () => {
+			return async () => {
 				const bountyId = opportunity.idBounty;
 				const stableAmount = opportunity.stableAmount;
-				write({ args: [bountyId, stableAmount] })
+				let trx = await opportunityContract.invest(bountyId, stableAmount);
+				let receipt = await trx.wait();
+                console.log(receipt);
 			}
 		})
-	}, [opportunity, write])
+	}, [opportunity])
 
 	return (
 		<div className="min-h-screen">
@@ -227,39 +225,5 @@ const OpportunityParticipation: NextPage<Props> = ({bounty}: Props) => {
 	);
 };
 
-export async function getServerSideProps({ params }: { params: any }) {
-	const bountyId = parseInt(params.bountyId);
-	let provider;
-	if (process.env.ENVIRONMENT === 'local') {
-		provider = new ethers.providers.JsonRpcProvider();
-	} else if (process.env.ENVIRONMENT === 'testnet') {
-		provider = new ethers.providers.JsonRpcProvider('https://matic-mumbai.chainstacklabs.com/');
-	} else {
-		provider = new ethers.providers.JsonRpcProvider('https://polygon-rpc.com/');
-	}
-
-	const contract = new ethers.Contract(contractAddressMumbai, DummyWorkFi.abi, provider);
-	console.log('contract')
-	const data = await contract.getBounty(bountyId);
-	console.log('data', data)
-	const bounty: Bounty = {
-		id: bountyId,
-		label: '',
-		organization: '',
-		description: 'string',
-		duration: data.deadline,
-		bounty: 1,
-		recruiter: data.recruiter,
-		postDate: new Date(),
-		startDate: new Date(),
-		worker: data.worker,
-		status: Status.open
-	}
-	return {
-		props: {
-			bounty: JSON.parse(JSON.stringify(bounty))
-		},
-	};
-};
 
 export default OpportunityParticipation;

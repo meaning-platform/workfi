@@ -1,26 +1,61 @@
 // context/themeContext.tsx
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { init, useConnectWallet, useAccountCenter } from '@web3-onboard/react'
-import { Account, Web3ContextType } from '../types';
+import { Account, Web3ContextType, Contracts } from '../types';
 import injectedModule from '@web3-onboard/injected-wallets'
+import useState from 'react-usestateref';
 import { ethers } from 'ethers'
 
+import DummyWorkFi from '../artifacts/contracts/DummyWorkFi.sol/DummyWorkFi.json';
+import { contractAddressMumbai } from '../config';
+import build from 'next/dist/build';
 
 export const Web3Context = React.createContext<Web3ContextType | null>(null);
 const injected = injectedModule()
 const infuraKey =  process.env.INFURA_KEY as string
-const rpcUrl = `https://mainnet.infura.io/v3/${infuraKey}`
+console.log('infuraKey', infuraKey)
+const ethRpcUrl = `https://mainnet.infura.io/v3/${infuraKey}`
+const ropstenrpcUrl =  `https://ropsten.infura.io/v3/${infuraKey}`
+const rinkebyrpcUrl =  `https://rinkeby.infura.io/v3/${infuraKey}`
+const polygonRpcUrl = 'https://matic-mainnet.chainstacklabs.com'
+const polygonMumbaiRpcUrl = 'https://matic-mumbai.chainstacklabs.com'
+
 
 // initialize Onboard
-init({
+const onboard = init({
     wallets: [injected],
     chains: [
       {
         id: '0x1',
         token: 'ETH',
         label: 'Ethereum Mainnet',
-        rpcUrl
-      }
+        rpcUrl: ethRpcUrl
+      },
+    {
+      id: '0x3',
+      token: 'tROP',
+      label: 'Ethereum Ropsten Testnet',
+      rpcUrl: ropstenrpcUrl
+    },
+    {
+      id: '0x4',
+      token: 'rETH',
+      label: 'Ethereum Rinkeby Testnet',
+      rpcUrl: rinkebyrpcUrl
+    },
+    {
+      id: '0x89',
+      token: 'MATIC',
+      label: 'Matic Mainnet',
+      rpcUrl: polygonRpcUrl
+    },
+    {
+      id: '0x13881',
+      token: 'MATIC',
+      label: 'Matic Mumbai Testnet',
+      rpcUrl: polygonMumbaiRpcUrl
+    }
+
     ],
     appMetadata:{
       name: 'meaning.social',
@@ -37,33 +72,96 @@ updateAccountCenter({minimal: true})
 
 const Web3Provider: React.FC<React.ReactNode> = ({ children }) => {
     const [{ wallet, connecting }, connect, disconnect] = useConnectWallet()
-    const [injectedProvider, setInjectedProvider] = useState<ethers.providers.Web3Provider | null>()
+    const [injectedProvider, setInjectedProvider, injectedProviderRef] = useState<ethers.providers.Web3Provider | null>()
     const [account, setAccount] = useState<Account | null>(null)
+    const [signer, setSigner] = useState<Contracts | null>(null)
 
     // create an ethers provider
     useEffect(() => {
-        if (!wallet?.provider) {
-        setInjectedProvider(null);
-        } else {
-        setInjectedProvider(new ethers.providers.Web3Provider(wallet.provider, "any"));
+        const walletsSub = onboard.state.select('wallets')
+
+        //Allow users session to persist between page refreshes
+        const { unsubscribe } = walletsSub.subscribe(wallets => {
+        const connectedWallets = wallets.map(({ label }) => label)
+        window.localStorage.setItem(
+            'connectedWallets',
+            JSON.stringify(connectedWallets)
+        )
+        })
+
+        const previouslyConnectedWallets = JSON.parse(
+            window.localStorage.getItem('connectedWallets')|| ""
+          )
+
+          if (previouslyConnectedWallets) {
+            console.log('previouslyConnectedWallets', previouslyConnectedWallets)
+            const ConnectWallet = async () => {
+                          // You can also auto connect "silently" and disable all onboard modals to avoid them flashing on page load
+                        await onboard.connectWallet({
+                            autoSelect: { label: previouslyConnectedWallets[0], disableModals: true, }
+                        })
+            }
+            ConnectWallet();
         }
-    }, [wallet]);
-    
-    // create a instance of the wallet
-    useEffect(() => {
+
         // If `wallet` is defined then the user is connected
         if (wallet) {
-        const { name, avatar } = wallet?.accounts[0].ens ?? {}
-        setAccount({
-            address: wallet.accounts[0].address,
-            balance: wallet.accounts[0].balance,
-            ens: { name, avatar: avatar?.url }
-        })
+            const { name, avatar } = wallet?.accounts[0].ens ?? {}
+            console.log('account', wallet?.accounts[0].ens)
+            console.log('ens name', name)
+            setAccount({
+                address: wallet.accounts[0].address,
+                balance: wallet.accounts[0].balance,
+                ens: { name, avatar: avatar?.url }
+            })
+            }
+
+
+        const buildProvider= async () => {
+            if(!wallet?.provider) {
+                
+                setInjectedProvider(null);
+            } else {
+                const provider = await new ethers.providers.Web3Provider(wallet.provider, "any")
+                setInjectedProvider(provider);
+                return provider;
+                
+            }
+          }
+
+        
+        const buildSigner= async (provider: ethers.providers.Web3Provider) => {
+            if(!provider) {
+                setSigner(null);
+                }else{
+                const signer = await provider.getSigner();
+                setSigner(signer);
+                return signer
+            }
         }
-    }, [wallet])
+
+        
+        const buildContext= async () => {
+          const provider = await buildProvider();
+          await buildSigner(provider);
+        }
+        
+        // call the function
+        buildContext()
+        // make sure to catch any error
+        .catch(console.error);
+
+
+    }, [wallet]);
+
+
+    
+
+    // create a instance of the wallet
+
 
   return (
-    <Web3Context.Provider value={{ Account: account, Provider: injectedProvider }}>
+    <Web3Context.Provider value={{ Account: account, Provider: injectedProvider, Signer: signer }}>
       {children}
     </Web3Context.Provider>
   );
