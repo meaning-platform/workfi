@@ -37,19 +37,6 @@
     {
       "inputs": [
         {
-          "internalType": "uint256",
-          "name": "bountyId",
-          "type": "uint256"
-        }
-      ],
-      "name": "closeBounty",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "uint128",
           "name": "stablePay",
           "type": "uint128"
@@ -84,25 +71,6 @@
         }
       ],
       "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "recruiter",
-          "type": "address"
-        }
-      ],
-      "name": "getBountiesCreatedByRecruiter",
-      "outputs": [
-        {
-          "internalType": "uint256[]",
-          "name": "",
-          "type": "uint256[]"
-        }
-      ],
-      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -149,31 +117,23 @@
             },
             {
               "internalType": "bool",
-              "name": "isClosed",
+              "name": "isCompleted",
               "type": "bool"
             },
             {
               "internalType": "uint256",
               "name": "deadline",
               "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "hasWorkerBeenPaid",
+              "type": "bool"
             }
           ],
           "internalType": "struct IWorkFi.BountyMetadata",
           "name": "",
           "type": "tuple"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "getInvestedBounties",
-      "outputs": [
-        {
-          "internalType": "uint256[]",
-          "name": "",
-          "type": "uint256[]"
         }
       ],
       "stateMutability": "view",
@@ -190,9 +150,9 @@
       "name": "getInvestment",
       "outputs": [
         {
-          "internalType": "uint128",
+          "internalType": "uint256",
           "name": "",
-          "type": "uint128"
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -212,6 +172,19 @@
         }
       ],
       "name": "invest",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "bountyId",
+          "type": "uint256"
+        }
+      ],
+      "name": "markBountyAsCompleted",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

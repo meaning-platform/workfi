@@ -1,85 +1,178 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "./IWorkFi.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import './IWorkFi.sol';
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 // TODO: Error checking
 // TODO: events
 contract WorkFi is IWorkFi {
+	BountyMetadata[] bounties;
+	mapping(uint256 => mapping(address => uint256)) investments;
 
-    BountyMetadata[] bounties;
-    mapping(address => uint256[]) bountiesByRecruiter; 
-    mapping(address => uint256[]) bountiesByInvestor;
-    mapping(address => mapping(uint256 => uint128)) investmentsByBountyByInvestor;
+	IERC20 stablecoinContract;
 
-    function acceptWorker(uint256 bountyId, address worker) external override {
-        bounties[bountyId-1].worker = worker;
-    }
+	event BountyCreated(uint256 indexed bountyId, address indexed recruiter);
+	event WorkerAccepted(uint256 indexed bountyId, address indexed worker);
+	event Invested(uint256 indexed bountyId, address indexed investor, uint256 amount);
 
-    function createBounty(
-        uint128 stablePay, 
-        uint128 nativePay, 
-        uint96 exchangeRate, 
-        address nativeToken, 
-        uint256 deadline
-    ) external override returns (uint256) { 
-        BountyMetadata memory bounty = BountyMetadata({
-            stablePay: stablePay,
-            nativePay: nativePay,
-            exchangeRate: exchangeRate,
-            nativeToken: nativeToken,
-            worker: address(0),
-            recruiter: msg.sender,
-            isClosed: false,
-            deadline: deadline
-        });
-        bounties.push(bounty);
-        bountiesByRecruiter[bounty.recruiter].push(bounties.length);
-        return bounties.length;
-    }
+	error TokenAddressMissing();
+	error BountyDoesNotExist();
+	error WorkerCannotBeZero();
+	error BountyIsCompleted();
+	error BountyIsNotCompleted();
+	error DeadlineExpired();
+    error NotRecruiter();
+    error WorkerCannotInvest();
+    error RecruiterCannotInvest();
+    error WorkerHasBeenPaid();
+    error NotAnInvestorOrWorker();
 
-    function invest(uint256 bountyId, uint128 stableAmount) external override {
-        bounties[bountyId-1].stablePay += stableAmount;
-        investmentsByBountyByInvestor[msg.sender][bountyId] += stableAmount;
-        
-        for (uint256 i = 0; i < bountiesByInvestor[msg.sender].length; i++) {
-            if (bountiesByInvestor[msg.sender][i] == bountyId) {
-                return; // bountyId already there, we don't need to add it again
-            }
+	// TODO: accept different stables in whitelist
+	constructor(address _stablecoin) {
+		stablecoinContract = IERC20(_stablecoin);
+	}
+
+	function acceptWorker(uint256 bountyId, address worker) external override {
+		if (bountyId > bounties.length) {
+			revert BountyDoesNotExist();
+		}
+		if (worker == address(0)) {
+			revert WorkerCannotBeZero();
+		}
+		if (bounties[bountyId - 1].isCompleted) {
+			revert BountyIsCompleted();
+		}
+		if (isDeadlineExpired(bountyId)) {
+			revert DeadlineExpired();
+		}
+
+		// TODO: Do we allow changing worker mid-task ?
+		bounties[bountyId - 1].worker = worker;
+		emit WorkerAccepted(bountyId, worker);
+	}
+
+	function createBounty(
+		uint128 stablePay,
+		uint128 nativePay,
+		uint96 exchangeRate,
+		address nativeToken,
+		uint256 deadline
+	) external override returns (uint256) {
+		BountyMetadata memory bounty = BountyMetadata({
+			stablePay: stablePay,
+			nativePay: nativePay,
+			exchangeRate: exchangeRate,
+			nativeToken: nativeToken,
+			worker: address(0),
+			recruiter: msg.sender,
+			isCompleted: false,
+			deadline: deadline,
+            hasWorkerBeenPaid: false
+		});
+
+		bounties.push(bounty);
+
+		emit BountyCreated(bounties.length, msg.sender);
+
+		// TODO: Do we allow using no erc20 ?
+		if (nativeToken != address(0)) {
+			if (nativePay == 0) {
+				revert TokenAddressMissing();
+			}
+			IERC20 token = IERC20(nativeToken);
+			// TODO: Use Escrow or other Payment contract ? https://docs.openzeppelin.com/contracts/2.x/api/payment
+			token.transferFrom(msg.sender, address(this), nativePay);
+		}
+
+		if (stablePay > 0) {
+			stablecoinContract.transferFrom(msg.sender, address(this), stablePay);
+		}
+
+		return bounties.length;
+	}
+
+	function invest(uint256 bountyId, uint128 stableAmount) external override {
+		if (bountyId > bounties.length) {
+			revert BountyDoesNotExist();
+		}
+		if (bounties[bountyId - 1].isCompleted) {
+			revert BountyIsCompleted();
+		}
+		if (isDeadlineExpired(bountyId)) {
+			revert DeadlineExpired();
+		}
+        if (msg.sender == bounties[bountyId-1].worker) {
+            revert WorkerCannotInvest();
         }
-        bountiesByInvestor[msg.sender].push(bountyId);
+        if (msg.sender == bounties[bountyId-1].recruiter) {
+            revert RecruiterCannotInvest();
+        }
 
-        // TODO: Transfer stable securely to contract / escrow
-    }
+		bounties[bountyId - 1].stablePay += stableAmount;
+		investments[bountyId][msg.sender] += stableAmount;
 
-    function acceptPayment(uint256 bountyId) external override {
-        // TODO
-        // TODO: Also make sure you cannot accept payment twice as an exploit to get more funds
-    }
+		emit Invested(bountyId, msg.sender, stableAmount);
+		// TODO: Use Escrow or other Payment contract ? https://docs.openzeppelin.com/contracts/2.x/api/payment
+		stablecoinContract.transferFrom(msg.sender, address(this), stableAmount);
+	}
 
-    function closeBounty(uint256 bountyId) external override { 
-        bounties[bountyId-1].isClosed = true;
-    }
+	function acceptPayment(uint256 bountyId) external override {
+		// TODO: Investors shoudl withdraw separetely and we should keep track of who withdrew their payment (the worker, each investor)
+		// TODO: Also make sure you cannot accept payment twice as an exploit to get more funds
+		if (bountyId > bounties.length) {
+			revert BountyDoesNotExist();
+		}
+        BountyMetadata storage bounty = bounties[bountyId-1];
+		if (!bounty.isCompleted) {
+			revert BountyIsNotCompleted();
+		}
+        if (msg.sender == bounty.worker) {
+            if (bounty.hasWorkerBeenPaid) {
+                revert WorkerHasBeenPaid();
+            }
+            // TODO: Pay worker in stable and I guess NT ?
+        } else if (investments[bountyId][msg.sender] > 0) {
+            uint256 investmentAmount = investments[bountyId][msg.sender];
+            investments[bountyId][msg.sender] = 0;
+            // TODO calculate investor NT, including share from APR pool, the pay the investor
+        } else {
+            revert NotAnInvestorOrWorker();
+        }
+	}
 
-    /////////////////
-    // VIEW FUNCTIONS
-    /////////////////
+	function markBountyAsCompleted(uint256 bountyId) external override {
+		// TODO: Security checks
+		if (bountyId > bounties.length) {
+			revert BountyDoesNotExist();
+		}
+		if (bounties[bountyId - 1].isCompleted) {
+			revert BountyIsCompleted();
+		}
+        if (msg.sender != bounties[bountyId-1].recruiter) {
+            revert NotRecruiter();
+        }
 
-    function getInvestment(uint256 bountyId) external view override returns (uint128) { 
-        return investmentsByBountyByInvestor[msg.sender][bountyId];
-     }
+		bounties[bountyId - 1].isCompleted = true;
+	}
 
-    function getBounty(uint256 bountyId) external view override returns (BountyMetadata memory) {
-        return bounties[bountyId-1];
-    }
+	function isDeadlineExpired(uint256 bountyId) private view returns (bool) {
+		// TODO: Double check if ok to check it like this
+		return bounties[bountyId - 1].deadline > block.timestamp;
+	}
 
-    function getBountiesCreatedByRecruiter(address recruiter) external view override returns (uint256[] memory) {
-        return bountiesByRecruiter[recruiter];
-    }
+	/////////////////
+	// VIEW FUNCTIONS
+	/////////////////
 
-    function getInvestedBounties() external view override returns (uint256[] memory) {
-        return bountiesByInvestor[msg.sender];
-    }
+	function getBounty(uint256 bountyId) external view override returns (BountyMetadata memory) {
+		return bounties[bountyId - 1];
+	}
 
+	function getInvestment(uint256 bountyId) external view override returns (uint256) {
+		if (bountyId > bounties.length) {
+			revert BountyDoesNotExist();
+		}
+		return investments[bountyId][msg.sender];
+	}
 }

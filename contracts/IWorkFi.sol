@@ -14,8 +14,11 @@ interface IWorkFi {
 
         address worker;
         address recruiter;
-        bool isClosed; // Whether bounty has been paid out
+        bool isCompleted; // Whether bounty is considered completed by the recruiter, unlocking withdrawal.
         uint256 deadline; // In seconds since Unix Epoch
+        bool hasWorkerBeenPaid;
+        
+        // TODO: Apr and calculate apr pool for investors and transfer it as well
     }
 
     /////////////////
@@ -38,24 +41,20 @@ interface IWorkFi {
     /// Called by the investor to invest in bounty.
     function invest(uint256 bountyId, uint128 stableAmount) external;
 
+    // TODO: Would be better for each worker and investor to withdraw individually, especially for security reasons if an investor address would be a contract
     /// Called by the worker to receive payment. Investors will receive their NT accordingly.
     function acceptPayment(uint256 bountyId) external;
 
-    /// Closes an expired bounty.
-    function closeBounty(uint256 bountyId) external;
+    ///  Marks the bounty as completed by the recruiter, unlocking withdrawal.
+    function markBountyAsCompleted(uint256 bountyId) external;
 
     /////////////////
     // VIEW FUNCTIONS
     /////////////////
 
-    /// Get user's current investment of a given bounty (in stablecoin)
-    function getInvestment(uint256 bountyId) external view returns (uint128);
-
     /// Get information of a bounty.
     function getBounty(uint256 bountyId) external view returns (BountyMetadata memory);
 
-    /// Get IDs of all bounties investor has invested in.
-    function getInvestedBounties() external view returns (uint256[] memory);
-
-    function getBountiesCreatedByRecruiter(address recruiter) external view returns (uint256[] memory);
+    /// Gets the investment the sender has put in the bounty
+    function getInvestment(uint256 bountyId) external view returns(uint256);
 }
