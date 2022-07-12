@@ -4,7 +4,8 @@ const fs = require('fs');
 async function main() {
 
 	const WorkFi = await hre.ethers.getContractFactory('WorkFi');
-	const workfi = await WorkFi.deploy();
+	// TODO Deploy mock ERC20
+	const workfi = await WorkFi.deploy(hre.ethers.constants.AddressZero);
 
 	await workfi.deployed();
 
