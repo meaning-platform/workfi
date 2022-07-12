@@ -6,19 +6,16 @@ import injectedModule from '@web3-onboard/injected-wallets'
 import useState from 'react-usestateref';
 import { ethers } from 'ethers'
 
-import DummyWorkFi from '../artifacts/contracts/DummyWorkFi.sol/DummyWorkFi.json';
-import { contractAddressMumbai } from '../config';
-import build from 'next/dist/build';
-
 export const Web3Context = React.createContext<Web3ContextType | null>(null);
 const injected = injectedModule()
 const infuraKey =  process.env.INFURA_KEY as string
-console.log('infuraKey', infuraKey)
-const ethRpcUrl = `https://mainnet.infura.io/v3/${infuraKey}`
-const ropstenrpcUrl =  `https://ropsten.infura.io/v3/${infuraKey}`
-const rinkebyrpcUrl =  `https://rinkeby.infura.io/v3/${infuraKey}`
-const polygonRpcUrl = 'https://matic-mainnet.chainstacklabs.com'
-const polygonMumbaiRpcUrl = 'https://matic-mumbai.chainstacklabs.com'
+
+const ethRpcUrl = process.env.ETH_MAINNET_RPC_URI as string
+console.log(ethRpcUrl)
+const ropstenrpcUrl =  process.env.ETH_ROPSTEN_RPC_URI as string 
+const rinkebyrpcUrl =  process.env.ETH_RINKEBY_RPC_URI as string  
+const polygonRpcUrl = process.env.POLYGON_MAINNET_URI as string
+const polygonMumbaiRpcUrl = process.env.POLYGON_MUMBAI_URI as string 
 
 
 // initialize Onboard
@@ -29,19 +26,19 @@ const onboard = init({
         id: '0x1',
         token: 'ETH',
         label: 'Ethereum Mainnet',
-        rpcUrl: ethRpcUrl
+        rpcUrl: ethRpcUrl + infuraKey
       },
     {
       id: '0x3',
       token: 'tROP',
       label: 'Ethereum Ropsten Testnet',
-      rpcUrl: ropstenrpcUrl
+      rpcUrl: ropstenrpcUrl + infuraKey
     },
     {
       id: '0x4',
       token: 'rETH',
       label: 'Ethereum Rinkeby Testnet',
-      rpcUrl: rinkebyrpcUrl
+      rpcUrl: rinkebyrpcUrl + infuraKey
     },
     {
       id: '0x89',
