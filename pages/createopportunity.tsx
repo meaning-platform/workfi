@@ -1,11 +1,16 @@
+import React, { useContext } from 'react';
+import { ethers } from 'ethers';
 import type { NextPage } from 'next/types';
 import type { LoanOpportunity } from './api/data/LoanOpportunity';
 import { defaultBounty } from './api/data/mockData';
 import { useEffect, useState } from 'react';
 import { Approve } from '../components/Approve';
 import DummyWorkFi from '../artifacts/contracts/DummyWorkFi.sol/DummyWorkFi.json';
-import { useContractWrite } from 'wagmi';
 import { contractAddressMumbai } from '../config';
+import { Web3Context } from '../context/web3Context';
+import { Web3ContextType } from '../types';
+
+
 
 //Opportunity Creation Form
 // This page is used to create a new opportunity, bounty data are mocked from the mockData.ts file
@@ -16,14 +21,15 @@ const CreateOpportunity: NextPage = () => {
 		bounty: defaultBounty.bounty,
 		stableAddress: '0x6b175474e89094c44da98b954eedeac495271d0f',
 		stableAmount: 0,
-		erc20Address: '',
+		erc20Address: '0x0000000000000000000000000000000000001010', //MATIC
 		erc20Amount: 0,
 		erc20Price: 0,
 		rewards: 0,
 		yield: 0,
 		stableRatio: 20,
 	} as LoanOpportunity);
-
+	const Web3 = React.useContext(Web3Context) as Web3ContextType;
+	const opportunityContract  = new ethers.Contract( contractAddressMumbai, DummyWorkFi.abi, Web3.Signer);
 	function setRatio(ratio: number) {
 		if (ratio > 0) {
 			setOpportunity({
@@ -35,22 +41,14 @@ const CreateOpportunity: NextPage = () => {
 		}
 	}
 
-	const { write, data, error, isLoading, isError, isSuccess } = useContractWrite(
-		{
-			addressOrName: contractAddressMumbai,
-			contractInterface: DummyWorkFi.abi,
-		},
-		'createBounty'
-	);
-
 	function handlePostOpportunityEvent() {
 		setOpenDialog(true);
 	}
-
+	
 	const [callSmartContract, setCallSmartContract] = useState<() => void>(() => {});
 	useEffect(() => {
 		setCallSmartContract(() => {
-			return () => {
+			return async () => {
 				const stablePay = opportunity.stableAmount;
 				const nativePay = opportunity.erc20Amount;
 				const exchangeRate = opportunity.erc20Price;
@@ -58,10 +56,12 @@ const CreateOpportunity: NextPage = () => {
 				let deadline = new Date();
 				deadline.setDate(deadline.getDate());
 				deadline = new Date(deadline.getTime() + 40 * 24 * 60 * 60 * 1000 * 1.15); // 40 days
-				write({ args: [stablePay, nativePay, exchangeRate, nativeToken, Math.round(deadline.getTime() / 1000)] });
+				let trx = await opportunityContract.createBounty(stablePay, nativePay, exchangeRate, nativeToken, Math.round(deadline.getTime() / 1000))
+				let receipt = await trx.wait();
+                console.log(receipt);
 			};
 		});
-	}, [opportunity, write]);
+	}, [opportunity]); 
 
 	return (
 		<div className="min-h-screen">
@@ -209,12 +209,12 @@ const CreateOpportunity: NextPage = () => {
 									</button>
 								</div>
 								<div className="px-4 py-3 text-right sm:px-6">
-									{isError && <div>{error?.message}</div>}
+									{/* {isError && <div>{error?.message}</div>}
 									{isSuccess && (
 										<div>
 											<a href={`https://mumbai.polygonscan.com/tx/${data?.hash}`}>See transaction</a>
 										</div>
-									)}
+									)} */}
 								</div>
 							</div>
 						</div>

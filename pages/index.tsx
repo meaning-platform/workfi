@@ -1,15 +1,10 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import Image from 'next/image';
-import Link from 'next/link';
-import { Account } from '../components/Account';
-import { NetworkSwitcher } from '../components/NetworkSwitcher';
-import { useIsMounted } from '../components/hooks/useIsMounted';
-import { useAccount } from 'wagmi';
+
+
 
 const Home: NextPage = () => {
-	const isMounted = useIsMounted();
-	const { data } = useAccount();
+
 	return (
 		<div className="flex min-h-screen flex-col justify-start py-2">
 			<Head>
