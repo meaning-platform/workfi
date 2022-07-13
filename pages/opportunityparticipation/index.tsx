@@ -3,10 +3,8 @@ import type { LoanOpportunity } from '../api/data/LoanOpportunity';
 import { defaultBounty } from '../api/data/mockData';
 import { useEffect, useState } from 'react';
 import { Approve } from '../../components/Approve';
-import WorkFi from '../../artifacts/contracts/WorkFi.sol/WorkFi.json';
-import { useContractWrite } from 'wagmi';
-import { contractAddress } from '../../config';
-import { WriteContractConfig } from '@wagmi/core';
+import DummyWorkFi from '../../artifacts/contracts/DummyWorkFi.sol/DummyWorkFi.json';
+import { contractAddressMumbai } from '../../config';
 
 //Opportunity Participation Form
 const OpportunityParticipation: NextPage = () => {
@@ -23,6 +21,8 @@ const OpportunityParticipation: NextPage = () => {
 		stableRatio: 20,
 	} as LoanOpportunity);
 	const [openDialog, setOpenDialog] = useState(false);
+	const Web3 = React.useContext(Web3Context) as Web3ContextType;
+	const opportunityContract  = new ethers.Contract( contractAddressMumbai, DummyWorkFi.abi, Web3.Signer);
 
 	function setRatio(ratio: number) {
 		if (ratio > 0) {
@@ -49,10 +49,12 @@ const OpportunityParticipation: NextPage = () => {
 			return () => {
 				const bountyId = opportunity.idBounty;
 				const stableAmount = opportunity.stableAmount;
-				write({ args: [bountyId, stableAmount] })
+				let trx = await opportunityContract.invest(bountyId, stableAmount);
+				let receipt = await trx.wait();
+                console.log(receipt);
 			}
 		})
-	}, [opportunity, write])
+	}, [opportunity])
 
 	return (
 		<div className="min-h-screen">
