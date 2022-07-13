@@ -5,8 +5,8 @@ import type { LoanOpportunity } from './api/data/LoanOpportunity';
 import { defaultBounty } from './api/data/mockData';
 import { useEffect, useState } from 'react';
 import { Approve } from '../components/Approve';
-import DummyWorkFi from '../artifacts/contracts/DummyWorkFi.sol/DummyWorkFi.json';
-import { contractAddressMumbai } from '../config';
+import WorkFi from '../artifacts/contracts/WorkFi.sol/WorkFi.json';
+import { contractAddress } from '../config';
 import { Web3Context } from '../context/web3Context';
 import { Web3ContextType } from '../types';
 
@@ -29,7 +29,7 @@ const CreateOpportunity: NextPage = () => {
 		stableRatio: 20,
 	} as LoanOpportunity);
 	const Web3 = React.useContext(Web3Context) as Web3ContextType;
-	const opportunityContract  = new ethers.Contract( contractAddressMumbai, DummyWorkFi.abi, Web3.Signer);
+	const opportunityContract  = new ethers.Contract( contractAddress, WorkFi.abi, Web3.Signer);
 	function setRatio(ratio: number) {
 		if (ratio > 0) {
 			setOpportunity({

@@ -6,8 +6,8 @@ import injectedModule from '@web3-onboard/injected-wallets'
 import useState from 'react-usestateref';
 import { ethers } from 'ethers'
 
-import DummyWorkFi from '../artifacts/contracts/DummyWorkFi.sol/DummyWorkFi.json';
-import { contractAddressMumbai } from '../config';
+import WorkFi from '../artifacts/contracts/WorkFi.sol/WorkFi.json';
+import { contractAddress } from '../config';
 import build from 'next/dist/build';
 
 export const Web3Context = React.createContext<Web3ContextType | null>(null);
