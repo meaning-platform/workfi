@@ -92,6 +92,8 @@ contract WorkFi is IWorkFi {
 		return bounties.length;
 	}
 
+	// TODO: Investing more than what the bounty covers ? We dont allow that don't we ?
+	// TODO: Calculate native token reduction from pay ? I think we dont want that since that calculatiuon is done on payment for workers / investors
 	function invest(uint256 bountyId, uint128 stableAmount) external override {
 		if (bountyId > bounties.length) {
 			revert BountyDoesNotExist();
