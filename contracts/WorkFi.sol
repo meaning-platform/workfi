@@ -158,7 +158,7 @@ contract WorkFi is IWorkFi {
 
 	function isDeadlineExpired(uint256 bountyId) private view returns (bool) {
 		// TODO: Double check if ok to check it like this
-		return bounties[bountyId - 1].deadline > block.timestamp;
+		return bounties[bountyId - 1].deadline < block.timestamp;
 	}
 
 	/////////////////
