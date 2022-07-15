@@ -3,34 +3,46 @@ pragma solidity ^0.8.0;
 
 import './IWorkFi.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
+import '@openzeppelin/contracts/access/Ownable.sol';
 
-// TODO: Error checking
-// TODO: events
-contract WorkFi is IWorkFi {
+contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 	BountyMetadata[] bounties;
 	mapping(uint256 => mapping(address => uint256)) investments;
 
-	IERC20 stablecoinContract;
+	mapping(address => bool) whitelistedStablecoins;
+
+	address constant ETH_ADDRESS = address(0);
 
 	event BountyCreated(uint256 indexed bountyId, address indexed recruiter);
 	event WorkerAccepted(uint256 indexed bountyId, address indexed worker);
 	event Invested(uint256 indexed bountyId, address indexed investor, uint256 amount);
+	event StablecoinAddedToWhitelist(address indexed stablecoin);
+	event StablecoinRemovedFromWhitelist(address indexed stablecoin);
 
-	error TokenAddressMissing();
 	error BountyDoesNotExist();
 	error WorkerCannotBeZero();
 	error BountyIsCompleted();
 	error BountyIsNotCompleted();
 	error DeadlineExpired();
-    error NotRecruiter();
-    error WorkerCannotInvest();
-    error RecruiterCannotInvest();
-    error WorkerHasBeenPaid();
-    error NotAnInvestorOrWorker();
+	error NotRecruiter();
+	error WorkerCannotInvest();
+	error RecruiterCannotInvest();
+	error WorkerHasBeenPaid();
+	error NotAnInvestorOrWorker();
+	error AWorkerWasAlreadyAccepted();
+	error ValueMustBeEqualToNativePayIfPayingWithEth();
+	error ValueShouldBeZeroIfNotPayingWithEth();
+	error NotAWhitelistedStablecoin();
 
-	// TODO: accept different stables in whitelist with admin account, in the future will be decided by governance (DAO)
-	constructor(address _stablecoin) {
-		stablecoinContract = IERC20(_stablecoin);
+	function addStablecoinToWhitelist(address stablecoin) external onlyOwner {
+		whitelistedStablecoins[stablecoin] = true;
+		emit StablecoinAddedToWhitelist(stablecoin);
+	}
+
+	function removeStablecoinFromWhitelist(address stablecoin) external onlyOwner {
+		whitelistedStablecoins[stablecoin] = false;
+		emit StablecoinRemovedFromWhitelist(stablecoin);
 	}
 
 	function acceptWorker(uint256 bountyId, address worker) external override {
@@ -40,15 +52,18 @@ contract WorkFi is IWorkFi {
 		if (worker == address(0)) {
 			revert WorkerCannotBeZero();
 		}
-		if (bounties[bountyId - 1].isCompleted) {
-			revert BountyIsCompleted();
-		}
 		if (isDeadlineExpired(bountyId)) {
 			revert DeadlineExpired();
 		}
+		BountyMetadata storage bounty = bounties[bountyId - 1];
+		if (bounty.isCompleted) {
+			revert BountyIsCompleted();
+		}
+		if (bounty.worker != address(0)) {
+			revert AWorkerWasAlreadyAccepted();
+		}
 
-		// TODO: Cannot change worker mid task, recruiter has to close this bounty and open a new one
-		bounties[bountyId - 1].worker = worker;
+		bounty.worker = worker;
 		emit WorkerAccepted(bountyId, worker);
 	}
 
@@ -57,36 +72,49 @@ contract WorkFi is IWorkFi {
 		uint128 nativePay,
 		uint96 exchangeRate,
 		address nativeToken,
+		address stablecoin,
 		uint256 deadline
-	) external override returns (uint256) {
+	) external payable override nonReentrant returns (uint256) {
+		if (nativeToken == ETH_ADDRESS) {
+			if (nativePay != msg.value) {
+				revert ValueMustBeEqualToNativePayIfPayingWithEth();
+			}
+		} else {
+			if (msg.value > 0) {
+				revert ValueShouldBeZeroIfNotPayingWithEth();
+			}
+		}
+
+		if (!whitelistedStablecoins[stablecoin]) {
+			revert NotAWhitelistedStablecoin();
+		}
+
 		BountyMetadata memory bounty = BountyMetadata({
 			stablePay: stablePay,
 			nativePay: nativePay,
 			exchangeRate: exchangeRate,
+			stablecoin: stablecoin,
 			nativeToken: nativeToken,
 			worker: address(0),
 			recruiter: msg.sender,
 			isCompleted: false,
 			deadline: deadline,
-            hasWorkerBeenPaid: false
+			hasWorkerBeenPaid: false
 		});
 
 		bounties.push(bounty);
 
 		emit BountyCreated(bounties.length, msg.sender);
 
-		// TODO: We allow no native token, can be paid in full stablecoin
-		// TODO handle when eth address is put, need to use native eth transfer tokens
-		if (nativeToken != address(0)) {
-			if (nativePay == 0) {
-				revert TokenAddressMissing();
-			}
+		if (nativeToken != ETH_ADDRESS) {
+			// TODO: Check if supports interface
 			IERC20 token = IERC20(nativeToken);
 			// TODO: Use Escrow or other Payment contract ? https://docs.openzeppelin.com/contracts/2.x/api/payment
 			token.transferFrom(msg.sender, address(this), nativePay);
 		}
 
 		if (stablePay > 0) {
+			IERC20 stablecoinContract = IERC20(bounty.stablecoin);
 			stablecoinContract.transferFrom(msg.sender, address(this), stablePay);
 		}
 
@@ -99,49 +127,53 @@ contract WorkFi is IWorkFi {
 		if (bountyId > bounties.length) {
 			revert BountyDoesNotExist();
 		}
-		if (bounties[bountyId - 1].isCompleted) {
-			revert BountyIsCompleted();
-		}
 		if (isDeadlineExpired(bountyId)) {
 			revert DeadlineExpired();
 		}
-        if (msg.sender == bounties[bountyId-1].worker) {
-            revert WorkerCannotInvest();
-        }
-        if (msg.sender == bounties[bountyId-1].recruiter) {
-            revert RecruiterCannotInvest();
-        }
+		BountyMetadata storage bounty = bounties[bountyId - 1];
+		if (bounty.isCompleted) {
+			revert BountyIsCompleted();
+		}
+		if (msg.sender == bounty.worker) {
+			revert WorkerCannotInvest();
+		}
+		if (msg.sender == bounty.recruiter) {
+			revert RecruiterCannotInvest();
+		}
 
-		bounties[bountyId - 1].stablePay += stableAmount;
+		bounty.stablePay += stableAmount;
 		investments[bountyId][msg.sender] += stableAmount;
 
 		emit Invested(bountyId, msg.sender, stableAmount);
 		// TODO: Use Escrow or other Payment contract ? https://docs.openzeppelin.com/contracts/2.x/api/payment
+		// TODO: What happens if a stable gets removed from the whitelist while a task is using it as stable ?
+		IERC20 stablecoinContract = IERC20(bounty.stablecoin);
 		stablecoinContract.transferFrom(msg.sender, address(this), stableAmount);
 	}
 
-	function acceptPayment(uint256 bountyId) external override {
+	function acceptPayment(uint256 bountyId) external override nonReentrant {
 		// TODO: Investors shoudl withdraw separetely and we should keep track of who withdrew their payment (the worker, each investor)
 		// TODO: Also make sure you cannot accept payment twice as an exploit to get more funds
 		if (bountyId > bounties.length) {
 			revert BountyDoesNotExist();
 		}
-        BountyMetadata storage bounty = bounties[bountyId-1];
+		BountyMetadata storage bounty = bounties[bountyId - 1];
 		if (!bounty.isCompleted) {
 			revert BountyIsNotCompleted();
 		}
-        if (msg.sender == bounty.worker) {
-            if (bounty.hasWorkerBeenPaid) {
-                revert WorkerHasBeenPaid();
-            }
-            // TODO: Pay worker in stable and I guess NT ?
-        } else if (investments[bountyId][msg.sender] > 0) {
-            uint256 investmentAmount = investments[bountyId][msg.sender];
-            investments[bountyId][msg.sender] = 0;
-            // TODO calculate investor NT, including share from APR pool, the pay the investor
-        } else {
-            revert NotAnInvestorOrWorker();
-        }
+		if (msg.sender == bounty.worker) {
+			if (bounty.hasWorkerBeenPaid) {
+				revert WorkerHasBeenPaid();
+			}
+			// TODO: Pay worker in stable and I guess NT ?
+			bounty.hasWorkerBeenPaid = true;
+		} else if (investments[bountyId][msg.sender] > 0) {
+			uint256 investmentAmount = investments[bountyId][msg.sender];
+			investments[bountyId][msg.sender] = 0;
+			// TODO calculate investor NT, including share from APR pool, the pay the investor
+		} else {
+			revert NotAnInvestorOrWorker();
+		}
 	}
 
 	function markBountyAsCompleted(uint256 bountyId) external override {
@@ -152,9 +184,9 @@ contract WorkFi is IWorkFi {
 		if (bounties[bountyId - 1].isCompleted) {
 			revert BountyIsCompleted();
 		}
-        if (msg.sender != bounties[bountyId-1].recruiter) {
-            revert NotRecruiter();
-        }
+		if (msg.sender != bounties[bountyId - 1].recruiter) {
+			revert NotRecruiter();
+		}
 
 		bounties[bountyId - 1].isCompleted = true;
 	}

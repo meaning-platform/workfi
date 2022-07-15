@@ -10,6 +10,7 @@ interface IWorkFi {
         uint128 stablePay; // Amount of stablecoin to pay worker
         uint128 nativePay; // Amount of NT to pay worker
         uint96 exchangeRate; // Amount of NT 1 DAI can buy
+        address stablecoin; // stable contract address
         address nativeToken; // NT contract address
 
         address worker;
@@ -35,8 +36,9 @@ interface IWorkFi {
         uint128 nativePay, // Amount of native coin
         uint96 exchangeRate, // Amount of native token 1 DAI can buy
         address nativeToken, // Address of native token
+		address stablecoin, // Address of stablecoin
         uint256 deadline // Deadline of bounty (in seconds after UNIX epoch)
-    ) external returns (uint256);
+    ) payable external returns (uint256);
 
     /// Called by the investor to invest in bounty.
     function invest(uint256 bountyId, uint128 stableAmount) external;
@@ -47,6 +49,9 @@ interface IWorkFi {
 
     ///  Marks the bounty as completed by the recruiter, unlocking withdrawal.
     function markBountyAsCompleted(uint256 bountyId) external;
+
+    // Close the bounty, returning to everyone the tokens they invested
+    function closeBounty(uint256 bountyId) external;
 
     /////////////////
     // VIEW FUNCTIONS
