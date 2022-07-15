@@ -28,7 +28,7 @@ contract WorkFi is IWorkFi {
     error WorkerHasBeenPaid();
     error NotAnInvestorOrWorker();
 
-	// TODO: accept different stables in whitelist
+	// TODO: accept different stables in whitelist with admin account, in the future will be decided by governance (DAO)
 	constructor(address _stablecoin) {
 		stablecoinContract = IERC20(_stablecoin);
 	}
@@ -47,7 +47,7 @@ contract WorkFi is IWorkFi {
 			revert DeadlineExpired();
 		}
 
-		// TODO: Do we allow changing worker mid-task ?
+		// TODO: Cannot change worker mid task, recruiter has to close this bounty and open a new one
 		bounties[bountyId - 1].worker = worker;
 		emit WorkerAccepted(bountyId, worker);
 	}
@@ -75,7 +75,8 @@ contract WorkFi is IWorkFi {
 
 		emit BountyCreated(bounties.length, msg.sender);
 
-		// TODO: Do we allow using no erc20 ?
+		// TODO: We allow no native token, can be paid in full stablecoin
+		// TODO handle when eth address is put, need to use native eth transfer tokens
 		if (nativeToken != address(0)) {
 			if (nativePay == 0) {
 				revert TokenAddressMissing();
@@ -92,7 +93,7 @@ contract WorkFi is IWorkFi {
 		return bounties.length;
 	}
 
-	// TODO: Investing more than what the bounty covers ? We dont allow that don't we ?
+	// TODO: For now, investing is capped at maximum bounty payment.
 	// TODO: Calculate native token reduction from pay ? I think we dont want that since that calculatiuon is done on payment for workers / investors
 	function invest(uint256 bountyId, uint128 stableAmount) external override {
 		if (bountyId > bounties.length) {
