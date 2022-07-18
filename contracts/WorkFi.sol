@@ -191,14 +191,20 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		bounties[bountyId - 1].isCompleted = true;
 	}
 
-	function isDeadlineExpired(uint256 bountyId) private view returns (bool) {
-		// TODO: Double check if ok to check it like this
-		return bounties[bountyId - 1].deadline < block.timestamp;
+	function closeBounty(uint256 bountyId) external override {
+		// TODO: Refund investments
+		// TODO: Refund recruiter
+		// TODO: Remove bounty from storage
 	}
 
 	/////////////////
 	// VIEW FUNCTIONS
 	/////////////////
+
+	function isDeadlineExpired(uint256 bountyId) private view returns (bool) {
+		// TODO: Double check if ok to check it like this
+		return bounties[bountyId - 1].deadline < block.timestamp;
+	}
 
 	function getBounty(uint256 bountyId) external view override returns (BountyMetadata memory) {
 		return bounties[bountyId - 1];

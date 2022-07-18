@@ -9,6 +9,7 @@ import type {
   CallOverrides,
   ContractTransaction,
   Overrides,
+  PayableOverrides,
   PopulatedTransaction,
   Signer,
   utils,
@@ -32,6 +33,7 @@ export declare namespace IWorkFi {
     stablePay: PromiseOrValue<BigNumberish>;
     nativePay: PromiseOrValue<BigNumberish>;
     exchangeRate: PromiseOrValue<BigNumberish>;
+    stablecoin: PromiseOrValue<string>;
     nativeToken: PromiseOrValue<string>;
     worker: PromiseOrValue<string>;
     recruiter: PromiseOrValue<string>;
@@ -47,6 +49,7 @@ export declare namespace IWorkFi {
     string,
     string,
     string,
+    string,
     boolean,
     BigNumber,
     boolean
@@ -54,6 +57,7 @@ export declare namespace IWorkFi {
     stablePay: BigNumber;
     nativePay: BigNumber;
     exchangeRate: BigNumber;
+    stablecoin: string;
     nativeToken: string;
     worker: string;
     recruiter: string;
@@ -67,22 +71,34 @@ export interface WorkFiInterface extends utils.Interface {
   functions: {
     "acceptPayment(uint256)": FunctionFragment;
     "acceptWorker(uint256,address)": FunctionFragment;
-    "createBounty(uint128,uint128,uint96,address,uint256)": FunctionFragment;
+    "addStablecoinToWhitelist(address)": FunctionFragment;
+    "closeBounty(uint256)": FunctionFragment;
+    "createBounty(uint128,uint128,uint96,address,address,uint256)": FunctionFragment;
     "getBounty(uint256)": FunctionFragment;
     "getInvestment(uint256)": FunctionFragment;
     "invest(uint256,uint128)": FunctionFragment;
     "markBountyAsCompleted(uint256)": FunctionFragment;
+    "owner()": FunctionFragment;
+    "removeStablecoinFromWhitelist(address)": FunctionFragment;
+    "renounceOwnership()": FunctionFragment;
+    "transferOwnership(address)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
       | "acceptPayment"
       | "acceptWorker"
+      | "addStablecoinToWhitelist"
+      | "closeBounty"
       | "createBounty"
       | "getBounty"
       | "getInvestment"
       | "invest"
       | "markBountyAsCompleted"
+      | "owner"
+      | "removeStablecoinFromWhitelist"
+      | "renounceOwnership"
+      | "transferOwnership"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -94,11 +110,20 @@ export interface WorkFiInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "addStablecoinToWhitelist",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "closeBounty",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "createBounty",
     values: [
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>,
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>
     ]
@@ -119,6 +144,19 @@ export interface WorkFiInterface extends utils.Interface {
     functionFragment: "markBountyAsCompleted",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
+  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "removeStablecoinFromWhitelist",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "renounceOwnership",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "transferOwnership",
+    values: [PromiseOrValue<string>]
+  ): string;
 
   decodeFunctionResult(
     functionFragment: "acceptPayment",
@@ -126,6 +164,14 @@ export interface WorkFiInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "acceptWorker",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "addStablecoinToWhitelist",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "closeBounty",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -142,15 +188,36 @@ export interface WorkFiInterface extends utils.Interface {
     functionFragment: "markBountyAsCompleted",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "removeStablecoinFromWhitelist",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "renounceOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "transferOwnership",
+    data: BytesLike
+  ): Result;
 
   events: {
     "BountyCreated(uint256,address)": EventFragment;
     "Invested(uint256,address,uint256)": EventFragment;
+    "OwnershipTransferred(address,address)": EventFragment;
+    "StablecoinAddedToWhitelist(address)": EventFragment;
+    "StablecoinRemovedFromWhitelist(address)": EventFragment;
     "WorkerAccepted(uint256,address)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "BountyCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Invested"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "StablecoinAddedToWhitelist"): EventFragment;
+  getEvent(
+    nameOrSignatureOrTopic: "StablecoinRemovedFromWhitelist"
+  ): EventFragment;
   getEvent(nameOrSignatureOrTopic: "WorkerAccepted"): EventFragment;
 }
 
@@ -176,6 +243,40 @@ export type InvestedEvent = TypedEvent<
 >;
 
 export type InvestedEventFilter = TypedEventFilter<InvestedEvent>;
+
+export interface OwnershipTransferredEventObject {
+  previousOwner: string;
+  newOwner: string;
+}
+export type OwnershipTransferredEvent = TypedEvent<
+  [string, string],
+  OwnershipTransferredEventObject
+>;
+
+export type OwnershipTransferredEventFilter =
+  TypedEventFilter<OwnershipTransferredEvent>;
+
+export interface StablecoinAddedToWhitelistEventObject {
+  stablecoin: string;
+}
+export type StablecoinAddedToWhitelistEvent = TypedEvent<
+  [string],
+  StablecoinAddedToWhitelistEventObject
+>;
+
+export type StablecoinAddedToWhitelistEventFilter =
+  TypedEventFilter<StablecoinAddedToWhitelistEvent>;
+
+export interface StablecoinRemovedFromWhitelistEventObject {
+  stablecoin: string;
+}
+export type StablecoinRemovedFromWhitelistEvent = TypedEvent<
+  [string],
+  StablecoinRemovedFromWhitelistEventObject
+>;
+
+export type StablecoinRemovedFromWhitelistEventFilter =
+  TypedEventFilter<StablecoinRemovedFromWhitelistEvent>;
 
 export interface WorkerAcceptedEventObject {
   bountyId: BigNumber;
@@ -226,13 +327,24 @@ export interface WorkFi extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    addStablecoinToWhitelist(
+      stablecoin: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    closeBounty(
+      bountyId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     createBounty(
       stablePay: PromiseOrValue<BigNumberish>,
       nativePay: PromiseOrValue<BigNumberish>,
       exchangeRate: PromiseOrValue<BigNumberish>,
       nativeToken: PromiseOrValue<string>,
+      stablecoin: PromiseOrValue<string>,
       deadline: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     getBounty(
@@ -255,6 +367,22 @@ export interface WorkFi extends BaseContract {
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    owner(overrides?: CallOverrides): Promise<[string]>;
+
+    removeStablecoinFromWhitelist(
+      stablecoin: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    renounceOwnership(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
   };
 
   acceptPayment(
@@ -268,13 +396,24 @@ export interface WorkFi extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  addStablecoinToWhitelist(
+    stablecoin: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  closeBounty(
+    bountyId: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   createBounty(
     stablePay: PromiseOrValue<BigNumberish>,
     nativePay: PromiseOrValue<BigNumberish>,
     exchangeRate: PromiseOrValue<BigNumberish>,
     nativeToken: PromiseOrValue<string>,
+    stablecoin: PromiseOrValue<string>,
     deadline: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   getBounty(
@@ -298,6 +437,22 @@ export interface WorkFi extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  owner(overrides?: CallOverrides): Promise<string>;
+
+  removeStablecoinFromWhitelist(
+    stablecoin: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  renounceOwnership(
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  transferOwnership(
+    newOwner: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
     acceptPayment(
       bountyId: PromiseOrValue<BigNumberish>,
@@ -310,11 +465,22 @@ export interface WorkFi extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    addStablecoinToWhitelist(
+      stablecoin: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    closeBounty(
+      bountyId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     createBounty(
       stablePay: PromiseOrValue<BigNumberish>,
       nativePay: PromiseOrValue<BigNumberish>,
       exchangeRate: PromiseOrValue<BigNumberish>,
       nativeToken: PromiseOrValue<string>,
+      stablecoin: PromiseOrValue<string>,
       deadline: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -337,6 +503,20 @@ export interface WorkFi extends BaseContract {
 
     markBountyAsCompleted(
       bountyId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    owner(overrides?: CallOverrides): Promise<string>;
+
+    removeStablecoinFromWhitelist(
+      stablecoin: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    renounceOwnership(overrides?: CallOverrides): Promise<void>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -362,6 +542,29 @@ export interface WorkFi extends BaseContract {
       amount?: null
     ): InvestedEventFilter;
 
+    "OwnershipTransferred(address,address)"(
+      previousOwner?: PromiseOrValue<string> | null,
+      newOwner?: PromiseOrValue<string> | null
+    ): OwnershipTransferredEventFilter;
+    OwnershipTransferred(
+      previousOwner?: PromiseOrValue<string> | null,
+      newOwner?: PromiseOrValue<string> | null
+    ): OwnershipTransferredEventFilter;
+
+    "StablecoinAddedToWhitelist(address)"(
+      stablecoin?: PromiseOrValue<string> | null
+    ): StablecoinAddedToWhitelistEventFilter;
+    StablecoinAddedToWhitelist(
+      stablecoin?: PromiseOrValue<string> | null
+    ): StablecoinAddedToWhitelistEventFilter;
+
+    "StablecoinRemovedFromWhitelist(address)"(
+      stablecoin?: PromiseOrValue<string> | null
+    ): StablecoinRemovedFromWhitelistEventFilter;
+    StablecoinRemovedFromWhitelist(
+      stablecoin?: PromiseOrValue<string> | null
+    ): StablecoinRemovedFromWhitelistEventFilter;
+
     "WorkerAccepted(uint256,address)"(
       bountyId?: PromiseOrValue<BigNumberish> | null,
       worker?: PromiseOrValue<string> | null
@@ -384,13 +587,24 @@ export interface WorkFi extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    addStablecoinToWhitelist(
+      stablecoin: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    closeBounty(
+      bountyId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     createBounty(
       stablePay: PromiseOrValue<BigNumberish>,
       nativePay: PromiseOrValue<BigNumberish>,
       exchangeRate: PromiseOrValue<BigNumberish>,
       nativeToken: PromiseOrValue<string>,
+      stablecoin: PromiseOrValue<string>,
       deadline: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     getBounty(
@@ -411,6 +625,22 @@ export interface WorkFi extends BaseContract {
 
     markBountyAsCompleted(
       bountyId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    owner(overrides?: CallOverrides): Promise<BigNumber>;
+
+    removeStablecoinFromWhitelist(
+      stablecoin: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    renounceOwnership(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
@@ -427,13 +657,24 @@ export interface WorkFi extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    addStablecoinToWhitelist(
+      stablecoin: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    closeBounty(
+      bountyId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     createBounty(
       stablePay: PromiseOrValue<BigNumberish>,
       nativePay: PromiseOrValue<BigNumberish>,
       exchangeRate: PromiseOrValue<BigNumberish>,
       nativeToken: PromiseOrValue<string>,
+      stablecoin: PromiseOrValue<string>,
       deadline: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     getBounty(
@@ -454,6 +695,22 @@ export interface WorkFi extends BaseContract {
 
     markBountyAsCompleted(
       bountyId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    removeStablecoinFromWhitelist(
+      stablecoin: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    renounceOwnership(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };

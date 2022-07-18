@@ -41,6 +41,19 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "uint256",
+        name: "bountyId",
+        type: "uint256",
+      },
+    ],
+    name: "closeBounty",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "uint128",
         name: "stablePay",
         type: "uint128",
@@ -61,6 +74,11 @@ const _abi = [
         type: "address",
       },
       {
+        internalType: "address",
+        name: "stablecoin",
+        type: "address",
+      },
+      {
         internalType: "uint256",
         name: "deadline",
         type: "uint256",
@@ -74,7 +92,7 @@ const _abi = [
         type: "uint256",
       },
     ],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
     type: "function",
   },
   {
@@ -103,6 +121,11 @@ const _abi = [
             internalType: "uint96",
             name: "exchangeRate",
             type: "uint96",
+          },
+          {
+            internalType: "address",
+            name: "stablecoin",
+            type: "address",
           },
           {
             internalType: "address",
