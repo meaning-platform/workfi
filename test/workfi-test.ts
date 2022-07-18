@@ -88,6 +88,31 @@ describe("WorkFi", function () {
       expect(bounty.hasWorkerBeenPaid).to.be.false;
    });
 
+   it('cannot change a worker if one has already been accepted', async () => {
+      const { stablecoin,
+         nativeToken,
+         workFi,
+         deadline,
+         contractDeployerAndRecruiter,
+         recruiterAddress,
+         investor,
+         investorAddress,
+         workerAddresses } = await prepare();
+
+      await (await workFi.createBounty(
+         stablePay,
+         nativePay,
+         exchangeRate,
+         nativeToken.address,
+         stablecoin.address,
+         deadline
+      )).wait();
+
+      await (await workFi.acceptWorker(1, workerAddresses[0])).wait();
+      await expect(workFi.acceptWorker(1, workerAddresses[1])).to.be.revertedWith('AWorkerWasAlreadyAccepted()');
+   });
+
+
    it('Creates an investment, transferring the stablecoin to the contract when calling invest', async () => {
       const { stablecoin,
          nativeToken,
@@ -142,6 +167,8 @@ describe("WorkFi", function () {
       const investment = await workFiWithInvestorSigner.getInvestment(bountyId);
       expect(investment).to.eq(stableInvestment);
    });
+
+  
 });
 
 
