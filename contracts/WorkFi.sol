@@ -127,7 +127,6 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		return bounties.length;
 	}
 
-	// TODO: For now, investing is capped at maximum bounty payment.
 	// TODO: Calculate native token reduction from pay ? I think we dont want that since that calculatiuon is done on payment for workers / investors
 	function invest(uint256 bountyId, uint128 stableAmount) external override {
 		if (bountyId > bounties.length) {
