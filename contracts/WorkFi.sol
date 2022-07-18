@@ -5,8 +5,12 @@ import './IWorkFi.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
+import '@openzeppelin/contracts/utils/Address.sol';
 
+// TODO: Revert on all failed transfer or transferFrom!!!
 contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
+	using Address for address payable;
+
 	BountyMetadata[] bounties;
 	mapping(uint256 => mapping(address => uint256)) investments;
 
@@ -35,6 +39,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 	error ValueShouldBeZeroIfNotPayingWithEth();
 	error NotAWhitelistedStablecoin();
 	error MaxInvestmentExceeded(uint256 maxPossibleAmount);
+	error TransferFailed();
 
 	function addStablecoinToWhitelist(address stablecoin) external onlyOwner {
 		whitelistedStablecoins[stablecoin] = true;
@@ -172,12 +177,23 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 			if (bounty.hasWorkerBeenPaid) {
 				revert WorkerHasBeenPaid();
 			}
-			// TODO: Pay worker in stable and I guess NT ?
+			// TODO: Pay worker in stable and I guess remaining NT (not investor base payment or APR) ? 
+			// TODO: Carefull, dont loop through investors, otherwise this function can be made unusuable with a lot of investors
 			bounty.hasWorkerBeenPaid = true;
 		} else if (investments[bountyId][msg.sender] > 0) {
 			uint256 investmentAmount = investments[bountyId][msg.sender];
 			investments[bountyId][msg.sender] = 0;
-			// TODO calculate investor NT, including share from APR pool, the pay the investor
+			uint256 baseInvestorNtPayment = investmentAmount / bounty.exchangeRate;
+			// TODO pay APR as well
+			uint256 ntPayment = baseInvestorNtPayment;
+			if (bounty.nativeToken != ETH_ADDRESS) {
+				IERC20 token = IERC20(bounty.nativeToken);
+				if (!token.transfer(msg.sender, ntPayment)) {
+					revert TransferFailed();
+				}
+			} else {
+				payable(msg.sender).sendValue(ntPayment);
+			}
 		} else {
 			revert NotAnInvestorOrWorker();
 		}
