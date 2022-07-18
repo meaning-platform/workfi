@@ -34,6 +34,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 	error ValueMustBeEqualToNativePayIfPayingWithEth();
 	error ValueShouldBeZeroIfNotPayingWithEth();
 	error NotAWhitelistedStablecoin();
+	error MaxInvestmentExceeded(uint256 maxPossibleAmount);
 
 	function addStablecoinToWhitelist(address stablecoin) external onlyOwner {
 		whitelistedStablecoins[stablecoin] = true;
@@ -140,6 +141,12 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		if (msg.sender == bounty.recruiter) {
 			revert RecruiterCannotInvest();
 		}
+		uint256 maxPossibleInvestment = bounty.nativePay * bounty.exchangeRate;
+		if (stableAmount > maxPossibleInvestment) {
+			revert MaxInvestmentExceeded(maxPossibleInvestment);
+		}
+
+		// TODO: Reduce nativePay by the investor's share and put it ona n escrow account or something for them
 
 		bounty.stablePay += stableAmount;
 		investments[bountyId][msg.sender] += stableAmount;

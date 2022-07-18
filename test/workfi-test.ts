@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { BigNumberish, Contract, Signer } from "ethers";
+import { BigNumber, BigNumberish, Contract, Signer } from "ethers";
 import * as hre from "hardhat";
 import { deployWorkFi } from "../scripts/utils";
 import { ERC20, MockERC20, WorkFi } from "../typechain-types";
@@ -7,9 +7,9 @@ import { ERC20, MockERC20, WorkFi } from "../typechain-types";
 
 
 describe("WorkFi", function () {
-   const stablePay = hre.ethers.utils.parseEther('0');
-   const nativePay = hre.ethers.utils.parseEther('1');
-   const exchangeRate = hre.ethers.utils.parseEther('2');
+   const stablePay = BigNumber.from(0);
+   const nativePay = BigNumber.from('1');
+   const exchangeRate = BigNumber.from('2');
 
    it('Creates a bounty when calling createBounty with enough ERC20', async () => {
       const { stablecoin,
@@ -60,7 +60,6 @@ describe("WorkFi", function () {
          investor,
          investorAddress,
          workerAddresses } = await prepare();
-
       await (await workFi.createBounty(
          stablePay,
          nativePay,
@@ -98,7 +97,6 @@ describe("WorkFi", function () {
          investor,
          investorAddress,
          workerAddresses } = await prepare();
-
       await (await workFi.createBounty(
          stablePay,
          nativePay,
@@ -122,12 +120,64 @@ describe("WorkFi", function () {
          recruiterAddress,
          investor,
          investorAddress,
-         workerAddresses } = await prepare();   
-      const stableInvestment = 100;
-      await stablecoin.transfer(investorAddress, stableInvestment); // transfer some stable to the investor since it doesn't have any for now
-      await stablecoin.connect(investor).approve(workFi.address, stableInvestment);
+         workerAddresses } = await prepare();
+      const maxPossibleStableInvestment = nativePay.mul(exchangeRate);
+      await stablecoin.transfer(investorAddress, maxPossibleStableInvestment); // transfer some stable to the investor since it doesn't have any for now
+      await stablecoin.connect(investor).approve(workFi.address, maxPossibleStableInvestment);
       const investorStableBalanceBefore = await stablecoin.balanceOf(investorAddress);
       const workFiStableBalanceBefore = await stablecoin.balanceOf(workFi.address);
+      await (await workFi.createBounty(
+         stablePay,
+         nativePay,
+         exchangeRate,
+         nativeToken.address,
+         stablecoin.address,
+         deadline
+      )).wait();
+
+      const workFiWithInvestorSigner = workFi.connect(investor);
+      await (await workFiWithInvestorSigner.invest(1, maxPossibleStableInvestment)).wait();
+
+      const bountyId = 1;
+
+      const filter = workFi.filters.Invested(1, investorAddress);
+      const events = await workFi.queryFilter(filter);
+      expect(events.length).to.eq(bountyId);
+      const [event] = events;
+      expect(event.args.amount).to.eq(maxPossibleStableInvestment);
+      const stableBalanceAfter = await stablecoin.balanceOf(investorAddress);
+      expect(stableBalanceAfter).to.eq(investorStableBalanceBefore.sub(maxPossibleStableInvestment));
+      const workFiStableBalanceAfter = await stablecoin.balanceOf(workFi.address);
+      expect(workFiStableBalanceAfter).to.eq(workFiStableBalanceBefore.add(maxPossibleStableInvestment));
+      const bounty = await workFi.getBounty(events[0].args.bountyId);
+      expect(bounty.stablePay).to.eq(stablePay.add(maxPossibleStableInvestment));
+      expect(bounty.nativePay).to.eq(nativePay);
+      expect(bounty.exchangeRate).to.eq(exchangeRate);
+      expect(bounty.nativeToken).to.eq(nativeToken.address);
+      expect(bounty.worker).to.eq(hre.ethers.constants.AddressZero);
+      expect(bounty.recruiter).to.eq(recruiterAddress);
+      expect(bounty.isCompleted).to.be.false;
+      expect(bounty.deadline).to.eq(deadline);
+      expect(bounty.hasWorkerBeenPaid).to.be.false;
+
+      const investment = await workFiWithInvestorSigner.getInvestment(bountyId);
+      expect(investment).to.eq(maxPossibleStableInvestment);
+   });
+
+   it('is not possible to invest more than the remaining amount', async () => {
+      const { stablecoin,
+         nativeToken,
+         workFi,
+         deadline,
+         contractDeployerAndRecruiter,
+         recruiterAddress,
+         investor,
+         investorAddress,
+         workerAddresses } = await prepare();
+      const maxStableInvestmentPossible = nativePay.mul(exchangeRate);
+      const stableInvestment = maxStableInvestmentPossible.add(1);
+      await stablecoin.transfer(investorAddress, stableInvestment); // transfer some stable to the investor since it doesn't have any for now
+      await stablecoin.connect(investor).approve(workFi.address, stableInvestment);
 
       await (await workFi.createBounty(
          stablePay,
@@ -139,36 +189,8 @@ describe("WorkFi", function () {
       )).wait();
 
       const workFiWithInvestorSigner = workFi.connect(investor);
-
-      await (await workFiWithInvestorSigner.invest(1, stableInvestment)).wait();
-
-      const bountyId = 1;
-
-      const filter = workFi.filters.Invested(1, investorAddress);
-      const events = await workFi.queryFilter(filter);
-      expect(events.length).to.eq(bountyId);
-      const [event] = events;
-      expect(event.args.amount).to.eq(stableInvestment);
-      const stableBalanceAfter = await stablecoin.balanceOf(investorAddress);
-      expect(stableBalanceAfter).to.eq(investorStableBalanceBefore.sub(stableInvestment));
-      const workFiStableBalanceAfter = await stablecoin.balanceOf(workFi.address);
-      expect(workFiStableBalanceAfter).to.eq(workFiStableBalanceBefore.add(stableInvestment));
-      const bounty = await workFi.getBounty(events[0].args.bountyId);
-      expect(bounty.stablePay).to.eq(stablePay.add(stableInvestment));
-      expect(bounty.nativePay).to.eq(nativePay);
-      expect(bounty.exchangeRate).to.eq(exchangeRate);
-      expect(bounty.nativeToken).to.eq(nativeToken.address);
-      expect(bounty.worker).to.eq(hre.ethers.constants.AddressZero);
-      expect(bounty.recruiter).to.eq(recruiterAddress);
-      expect(bounty.isCompleted).to.be.false;
-      expect(bounty.deadline).to.eq(deadline);
-      expect(bounty.hasWorkerBeenPaid).to.be.false;
-
-      const investment = await workFiWithInvestorSigner.getInvestment(bountyId);
-      expect(investment).to.eq(stableInvestment);
+      await expect(workFiWithInvestorSigner.invest(1, stableInvestment)).to.be.revertedWith(`MaxInvestmentExceeded(${maxStableInvestmentPossible})`);
    });
-
-  
 });
 
 
