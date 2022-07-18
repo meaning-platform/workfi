@@ -188,14 +188,17 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		if (bountyId > bounties.length) {
 			revert BountyDoesNotExist();
 		}
-		if (bounties[bountyId - 1].isCompleted) {
+
+		BountyMetadata storage bounty = bounties[bountyId - 1];
+
+		if (bounty.isCompleted) {
 			revert BountyIsCompleted();
 		}
-		if (msg.sender != bounties[bountyId - 1].recruiter) {
+		if (msg.sender != bounty.recruiter) {
 			revert NotRecruiter();
 		}
 
-		bounties[bountyId - 1].isCompleted = true;
+		bounty.isCompleted = true;
 	}
 
 	function closeBounty(uint256 bountyId) external override {
