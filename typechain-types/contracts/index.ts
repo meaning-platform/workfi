@@ -3,6 +3,8 @@
 /* eslint-disable */
 import type * as test from "./test";
 export type { test };
+export type { DeadlineUtils } from "./DeadlineUtils";
 export type { Greeter } from "./Greeter";
 export type { IWorkFi } from "./IWorkFi";
+export type { MathUtils } from "./MathUtils";
 export type { WorkFi } from "./WorkFi";

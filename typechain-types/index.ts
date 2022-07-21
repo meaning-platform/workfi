@@ -36,10 +36,14 @@ export type { ERC20WithTokenInfo } from "./@superfluid-finance/ethereum-contract
 export { ERC20WithTokenInfo__factory } from "./factories/@superfluid-finance/ethereum-contracts/contracts/interfaces/tokens/ERC20WithTokenInfo__factory";
 export type { TokenInfo } from "./@superfluid-finance/ethereum-contracts/contracts/interfaces/tokens/TokenInfo";
 export { TokenInfo__factory } from "./factories/@superfluid-finance/ethereum-contracts/contracts/interfaces/tokens/TokenInfo__factory";
+export type { DeadlineUtils } from "./contracts/DeadlineUtils";
+export { DeadlineUtils__factory } from "./factories/contracts/DeadlineUtils__factory";
 export type { Greeter } from "./contracts/Greeter";
 export { Greeter__factory } from "./factories/contracts/Greeter__factory";
 export type { IWorkFi } from "./contracts/IWorkFi";
 export { IWorkFi__factory } from "./factories/contracts/IWorkFi__factory";
+export type { MathUtils } from "./contracts/MathUtils";
+export { MathUtils__factory } from "./factories/contracts/MathUtils__factory";
 export type { MockERC20 } from "./contracts/test/MockERC20";
 export { MockERC20__factory } from "./factories/contracts/test/MockERC20__factory";
 export type { WorkFi } from "./contracts/WorkFi";

@@ -15,7 +15,7 @@ const _abi = [
         type: "uint256",
       },
     ],
-    name: "acceptPayment",
+    name: "acceptInvestorPayment",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -46,7 +46,20 @@ const _abi = [
         type: "uint256",
       },
     ],
-    name: "closeBounty",
+    name: "acceptWorkerPayment",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "bountyId",
+        type: "uint256",
+      },
+    ],
+    name: "cancelBounty",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -55,12 +68,12 @@ const _abi = [
     inputs: [
       {
         internalType: "uint128",
-        name: "stablePay",
+        name: "workerStablePay",
         type: "uint128",
       },
       {
         internalType: "uint128",
-        name: "nativePay",
+        name: "workerNativePay",
         type: "uint128",
       },
       {
@@ -77,6 +90,11 @@ const _abi = [
         internalType: "address",
         name: "stablecoin",
         type: "address",
+      },
+      {
+        internalType: "uint128",
+        name: "dailyYieldPercentage",
+        type: "uint128",
       },
       {
         internalType: "uint256",
@@ -103,18 +121,37 @@ const _abi = [
         type: "uint256",
       },
     ],
+    name: "getAmountOfInvestments",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "bountyId",
+        type: "uint256",
+      },
+    ],
     name: "getBounty",
     outputs: [
       {
         components: [
           {
             internalType: "uint128",
-            name: "stablePay",
+            name: "workerStablePay",
             type: "uint128",
           },
           {
             internalType: "uint128",
-            name: "nativePay",
+            name: "workerNativePay",
             type: "uint128",
           },
           {
@@ -133,6 +170,11 @@ const _abi = [
             type: "address",
           },
           {
+            internalType: "uint128",
+            name: "dailyYieldPercentage",
+            type: "uint128",
+          },
+          {
             internalType: "address",
             name: "worker",
             type: "address",
@@ -143,22 +185,32 @@ const _abi = [
             type: "address",
           },
           {
-            internalType: "bool",
-            name: "isCompleted",
-            type: "bool",
+            internalType: "enum BountyStatus",
+            name: "status",
+            type: "uint8",
           },
           {
             internalType: "uint256",
-            name: "deadline",
+            name: "workerDeadline",
             type: "uint256",
           },
           {
-            internalType: "bool",
-            name: "hasWorkerBeenPaid",
-            type: "bool",
+            internalType: "uint128",
+            name: "initialWorkerStablePay",
+            type: "uint128",
+          },
+          {
+            internalType: "uint128",
+            name: "initialWorkerNativePay",
+            type: "uint128",
+          },
+          {
+            internalType: "uint256",
+            name: "creationDate",
+            type: "uint256",
           },
         ],
-        internalType: "struct IWorkFi.BountyMetadata",
+        internalType: "struct BountyMetadata",
         name: "",
         type: "tuple",
       },
@@ -173,13 +225,30 @@ const _abi = [
         name: "bountyId",
         type: "uint256",
       },
+      {
+        internalType: "uint256",
+        name: "investmentId",
+        type: "uint256",
+      },
     ],
     name: "getInvestment",
     outputs: [
       {
-        internalType: "uint256",
+        components: [
+          {
+            internalType: "uint128",
+            name: "stableAmount",
+            type: "uint128",
+          },
+          {
+            internalType: "uint128",
+            name: "nativeTokenPayment",
+            type: "uint128",
+          },
+        ],
+        internalType: "struct IWorkFi.InvestmentMetadata",
         name: "",
-        type: "uint256",
+        type: "tuple",
       },
     ],
     stateMutability: "view",
@@ -212,6 +281,19 @@ const _abi = [
       },
     ],
     name: "markBountyAsCompleted",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "bountyId",
+        type: "uint256",
+      },
+    ],
+    name: "withdrawInvestments",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

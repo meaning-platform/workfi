@@ -16,7 +16,7 @@ struct BountyMetadata {
 	uint96 exchangeRate; // Amount of NT 1 DAI can buy
 	address stablecoin; // stable contract address
 	address nativeToken; // NT contract address
-	uint128 dailyYieldPercentage; // APR/365
+	uint128 dailyYieldPercentage; // APR/365 in basis point, e.g 0.27% = 27
 	address worker;
 	address recruiter;
 	BountyStatus status;
@@ -32,10 +32,10 @@ library BountyUtils {
 		bounty.workerNativePay = 0;
 	}
 
-	function isInvestmentOpportunityClosed(BountyMetadata storage bounty) external returns (bool) {
+	function isInvestmentOpportunityClosed(BountyMetadata storage bounty, uint256 investmentOpportunityPercentage) external view returns (bool) {
 		return
 			bounty.status == BountyStatus.WorkerHasBeenPaid ||
 			(bounty.status == BountyStatus.Completed &&
-				block.timestamp >= getInvestmentOpportunityDeadline(bounty.creationDate, bounty.workerDeadline));
+				block.timestamp >= DeadlineUtils.getInvestmentOpportunityDeadline(bounty.creationDate, bounty.workerDeadline, investmentOpportunityPercentage));
 	}
 }

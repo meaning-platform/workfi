@@ -69,6 +69,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.TokenInfo__factory>;
     getContractFactory(
+      name: "DeadlineUtils",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.DeadlineUtils__factory>;
+    getContractFactory(
       name: "Greeter",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Greeter__factory>;
@@ -76,6 +80,10 @@ declare module "hardhat/types/runtime" {
       name: "IWorkFi",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IWorkFi__factory>;
+    getContractFactory(
+      name: "MathUtils",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.MathUtils__factory>;
     getContractFactory(
       name: "MockERC20",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -156,6 +164,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.TokenInfo>;
     getContractAt(
+      name: "DeadlineUtils",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.DeadlineUtils>;
+    getContractAt(
       name: "Greeter",
       address: string,
       signer?: ethers.Signer
@@ -165,6 +178,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IWorkFi>;
+    getContractAt(
+      name: "MathUtils",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.MathUtils>;
     getContractAt(
       name: "MockERC20",
       address: string,

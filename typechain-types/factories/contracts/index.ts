@@ -2,6 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 export * as test from "./test";
+export { DeadlineUtils__factory } from "./DeadlineUtils__factory";
 export { Greeter__factory } from "./Greeter__factory";
 export { IWorkFi__factory } from "./IWorkFi__factory";
+export { MathUtils__factory } from "./MathUtils__factory";
 export { WorkFi__factory } from "./WorkFi__factory";

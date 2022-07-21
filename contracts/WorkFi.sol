@@ -3,12 +3,14 @@ pragma solidity ^0.8.0;
 
 import './IWorkFi.sol';
 import './Bounty.sol';
+import './MathUtils.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
 
-// TODO: What ifa  worker has not been found, how tdo investors recover their funds and recruiter doenst loose theirs ?
+// TODO Security: double check all type
+// TODO: What if a worker has not been found, how do investors recover their funds and recruiter doenst loose theirs ?
 contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 	using Address for address payable;
 	using BountyUtils for BountyMetadata;
@@ -19,6 +21,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 	mapping(address => bool) whitelistedStablecoins;
 
 	address constant ETH_ADDRESS = address(0);
+	uint256 constant INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT = 3000; // 30%
 
 	event BountyCreated(uint256 indexed bountyId, address indexed recruiter);
 	event WorkerAccepted(uint256 indexed bountyId, address indexed worker);
@@ -44,7 +47,6 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 	error ValueShouldBeZeroIfNotPayingWithEth();
 	error NotAWhitelistedStablecoin();
 	error MaxInvestmentExceeded(uint128 maxPossibleAmount);
-	error DateIsInThePast();
 	error InvestmentOpportunityIsStillOpen();
 	error InvestmentOpportunityIsClosed();
 	error WorkerDeadlineExpired();
@@ -68,10 +70,10 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		if (worker == address(0)) {
 			revert WorkerCannotBeZero();
 		}
-		if (isWorkerDeadlineExpired(bountyId)) {
+		BountyMetadata storage bounty = bounties[bountyId - 1];
+		if (DeadlineUtils.isWorkerDeadlineExpired(bounty.workerDeadline)) {
 			revert WorkerDeadlineExpired();
 		}
-		BountyMetadata storage bounty = bounties[bountyId - 1];
 		if (bounty.status != BountyStatus.Ongoing) {
 			revert BountyIsNotOngoing();
 		}
@@ -94,7 +96,13 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 	) external payable override nonReentrant returns (uint256) {
 		if (nativeToken == ETH_ADDRESS) {
 			if (workerNativePay != msg.value) {
-				uint128 yieldPool = calculateYieldPool(workerNativePay, dailyYieldPercentage, block.timestamp, workerDeadline);
+				uint128 yieldPool = calculateYieldPool(
+					workerNativePay,
+					exchangeRate,
+					dailyYieldPercentage,
+					block.timestamp,
+					workerDeadline
+				);
 				revert ThisAmountOfEthIsRequired(workerNativePay + yieldPool);
 			}
 		} else {
@@ -106,6 +114,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		if (!whitelistedStablecoins[stablecoin]) {
 			revert NotAWhitelistedStablecoin();
 		}
+		DeadlineUtils.revertIfWorkerDeadlineIsInvalid(block.timestamp, workerDeadline);
 
 		BountyMetadata memory bounty = BountyMetadata({
 			workerStablePay: workerStablePay,
@@ -117,7 +126,10 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 			worker: address(0),
 			recruiter: msg.sender,
 			status: BountyStatus.Ongoing,
-			workerDeadline: workerDeadline
+			workerDeadline: workerDeadline,
+			initialWorkerStablePay: workerStablePay,
+			initialWorkerNativePay: workerNativePay,
+			creationDate: block.timestamp
 		});
 
 		bounties.push(bounty);
@@ -143,10 +155,10 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		if (bountyId > bounties.length) {
 			revert BountyDoesNotExist();
 		}
-		if (isInvestmentOpportunityClosed(bountyId)) {
+		BountyMetadata storage bounty = bounties[bountyId - 1];
+		if (bounty.isInvestmentOpportunityClosed(INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT)) {
 			revert InvestmentOpportunityIsClosed();
 		}
-		BountyMetadata storage bounty = bounties[bountyId - 1];
 		if (msg.sender == bounty.worker) {
 			revert WorkerCannotInvest();
 		}
@@ -162,15 +174,17 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		bounty.workerNativePay -= workerNativePayGoingToTheInvestor;
 		bounty.workerStablePay += stableAmount;
 
+		uint128 daysLeft = DeadlineUtils.getDaysBeforeInvestmentOpportunityDeadline(
+			bounty.creationDate,
+			block.timestamp,
+			bounty.workerDeadline,
+			INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT
+		);
 		investments[bountyId][msg.sender].push(
 			InvestmentMetadata({
 				stableAmount: stableAmount,
 				nativeTokenPayment: workerNativePayGoingToTheInvestor +
-					calculateTotalYield(
-						stableAmount,
-						bounty.dailyYieldPercentage,
-						getDaysBeforeDate(block.timestamp, getInvestorDeadline(bounty.workerDeadline))
-					)
+					calculateTotalYield(stableAmount, bounty.dailyYieldPercentage, daysLeft)
 			})
 		);
 
@@ -211,7 +225,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 			revert BountyDoesNotExist();
 		}
 		BountyMetadata storage bounty = bounties[bountyId - 1];
-		if (!isInvestmentOpportunityClosed(bountyId)) {
+		if (!bounty.isInvestmentOpportunityClosed(INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT)) {
 			revert InvestmentOpportunityIsStillOpen();
 		}
 		if (investments[bountyId][msg.sender].length == 0) {
@@ -221,7 +235,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		// TODO: Max amount of investments to prevent large loops ? Only blocks the investor itself though
 		uint128 payment = 0;
 		for (uint256 i = 0; i < investments[bountyId][msg.sender].length; i++) {
-			payment += investments[bountyId][msg.sender][i].reward;
+			payment += investments[bountyId][msg.sender][i].nativeTokenPayment;
 		}
 		delete investments[bountyId][msg.sender];
 
@@ -243,7 +257,6 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		}
 	}
 
-
 	function markBountyAsCompleted(uint256 bountyId) external override {
 		if (bountyId > bounties.length) {
 			revert BountyDoesNotExist();
@@ -264,7 +277,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		}
 
 		bounty.status = BountyStatus.Completed;
-		
+
 		emit BountyCompleted(bountyId);
 	}
 
@@ -289,6 +302,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 
 		uint128 yieldPool = calculateYieldPool(
 			bounty.initialWorkerNativePay,
+			bounty.exchangeRate,
 			bounty.dailyYieldPercentage,
 			block.timestamp,
 			bounty.workerDeadline
@@ -296,7 +310,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 
 		emit BountyCancelled(bountyId);
 
-		sendNativeToken(bounty.nativeToken + yieldPool, bounty.recruiter, bounty.initialWorkerNativePay);
+		sendNativeToken(bounty.nativeToken, bounty.recruiter, bounty.initialWorkerNativePay + yieldPool);
 		IERC20 stablecoin = IERC20(bounty.stablecoin);
 		stablecoin.transfer(bounty.recruiter, bounty.initialWorkerStablePay);
 	}
@@ -327,16 +341,11 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 	// VIEW FUNCTIONS
 	/////////////////
 
-	function isWorkerDeadlineExpired(uint256 bountyId) private view returns (bool) {
-		// TODO: Double check if ok to check it like this
-		return bounties[bountyId - 1].deadline < block.timestamp;
-	}
-
 	function getBounty(uint256 bountyId) external view override returns (BountyMetadata memory) {
 		return bounties[bountyId - 1];
 	}
 
-	function getAmountOfInvestments(uint256 bountyId) external view returns (uint256) {
+	function getAmountOfInvestments(uint256 bountyId) external view override returns (uint256) {
 		return investments[bountyId][msg.sender].length;
 	}
 
@@ -356,21 +365,22 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 	// PURE FUNCTIONS
 	/////////////////
 
-	function getDaysBeforeDate(uint256 nowAsUnixSeconds, uint256 dateAsUnixSeconds) public pure returns (uint128) {
-		if (dateAsUnixSeconds < nowAsUnixSeconds) {
-			revert DateIsInThePast();
-		}
-		return uint128((dateAsUnixSeconds - nowAsUnixSeconds) / 1 days);
-	}
-
 	function calculateYieldPool(
 		uint128 workerNativePay,
+		uint128 exchangeRate,
 		uint128 dailyYieldPercentage,
 		uint256 bountyCreationDate,
 		uint256 workerDeadline
 	) public pure returns (uint128) {
-		// TODO
-		uint128 investmentOpportunityDays = getDaysBeforeDate(bountyCreationDate, getInvestorDeadline(workerDeadline));
+		uint128 stableNeeded = workerNativePay / exchangeRate;
+		uint128 investmentOpportunityDays = DeadlineUtils.getDaysBeforeInvestmentOpportunityDeadline(
+			bountyCreationDate,
+			bountyCreationDate,
+			workerDeadline,
+			INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT
+		);
+		uint128 totalYieldInStable = calculateTotalYield(stableNeeded, dailyYieldPercentage, investmentOpportunityDays);
+		return totalYieldInStable * exchangeRate;
 	}
 
 	function calculateTotalYield(
@@ -378,10 +388,6 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		uint128 dailyYieldPercentage,
 		uint128 daysBeforeInvestmentOpportunityCloses
 	) private pure returns (uint128) {
-		return calculatePercentage(stableAmount, dailyYieldPercentage) * daysBeforeInvestmentOpportunityCloses;
-	}
-
-	function calculatePercentage(uint128 value, uint128 percentage) private pure returns (uint128) {
-		return (value * percentage) / 10000;
+		return uint128(MathUtils.calculatePercentage(stableAmount, dailyYieldPercentage) * daysBeforeInvestmentOpportunityCloses);
 	}
 }

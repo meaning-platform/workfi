@@ -24,71 +24,96 @@ import type {
   PromiseOrValue,
 } from "../common";
 
+export type BountyMetadataStruct = {
+  workerStablePay: PromiseOrValue<BigNumberish>;
+  workerNativePay: PromiseOrValue<BigNumberish>;
+  exchangeRate: PromiseOrValue<BigNumberish>;
+  stablecoin: PromiseOrValue<string>;
+  nativeToken: PromiseOrValue<string>;
+  dailyYieldPercentage: PromiseOrValue<BigNumberish>;
+  worker: PromiseOrValue<string>;
+  recruiter: PromiseOrValue<string>;
+  status: PromiseOrValue<BigNumberish>;
+  workerDeadline: PromiseOrValue<BigNumberish>;
+  initialWorkerStablePay: PromiseOrValue<BigNumberish>;
+  initialWorkerNativePay: PromiseOrValue<BigNumberish>;
+  creationDate: PromiseOrValue<BigNumberish>;
+};
+
+export type BountyMetadataStructOutput = [
+  BigNumber,
+  BigNumber,
+  BigNumber,
+  string,
+  string,
+  BigNumber,
+  string,
+  string,
+  number,
+  BigNumber,
+  BigNumber,
+  BigNumber,
+  BigNumber
+] & {
+  workerStablePay: BigNumber;
+  workerNativePay: BigNumber;
+  exchangeRate: BigNumber;
+  stablecoin: string;
+  nativeToken: string;
+  dailyYieldPercentage: BigNumber;
+  worker: string;
+  recruiter: string;
+  status: number;
+  workerDeadline: BigNumber;
+  initialWorkerStablePay: BigNumber;
+  initialWorkerNativePay: BigNumber;
+  creationDate: BigNumber;
+};
+
 export declare namespace IWorkFi {
-  export type BountyMetadataStruct = {
-    stablePay: PromiseOrValue<BigNumberish>;
-    nativePay: PromiseOrValue<BigNumberish>;
-    exchangeRate: PromiseOrValue<BigNumberish>;
-    stablecoin: PromiseOrValue<string>;
-    nativeToken: PromiseOrValue<string>;
-    worker: PromiseOrValue<string>;
-    recruiter: PromiseOrValue<string>;
-    isCompleted: PromiseOrValue<boolean>;
-    deadline: PromiseOrValue<BigNumberish>;
-    hasWorkerBeenPaid: PromiseOrValue<boolean>;
+  export type InvestmentMetadataStruct = {
+    stableAmount: PromiseOrValue<BigNumberish>;
+    nativeTokenPayment: PromiseOrValue<BigNumberish>;
   };
 
-  export type BountyMetadataStructOutput = [
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    string,
-    string,
-    string,
-    string,
-    boolean,
-    BigNumber,
-    boolean
-  ] & {
-    stablePay: BigNumber;
-    nativePay: BigNumber;
-    exchangeRate: BigNumber;
-    stablecoin: string;
-    nativeToken: string;
-    worker: string;
-    recruiter: string;
-    isCompleted: boolean;
-    deadline: BigNumber;
-    hasWorkerBeenPaid: boolean;
+  export type InvestmentMetadataStructOutput = [BigNumber, BigNumber] & {
+    stableAmount: BigNumber;
+    nativeTokenPayment: BigNumber;
   };
 }
 
 export interface IWorkFiInterface extends utils.Interface {
   functions: {
-    "acceptPayment(uint256)": FunctionFragment;
+    "acceptInvestorPayment(uint256)": FunctionFragment;
     "acceptWorker(uint256,address)": FunctionFragment;
-    "closeBounty(uint256)": FunctionFragment;
-    "createBounty(uint128,uint128,uint96,address,address,uint256)": FunctionFragment;
+    "acceptWorkerPayment(uint256)": FunctionFragment;
+    "cancelBounty(uint256)": FunctionFragment;
+    "createBounty(uint128,uint128,uint96,address,address,uint128,uint256)": FunctionFragment;
+    "getAmountOfInvestments(uint256)": FunctionFragment;
     "getBounty(uint256)": FunctionFragment;
-    "getInvestment(uint256)": FunctionFragment;
+    "getInvestment(uint256,uint256)": FunctionFragment;
     "invest(uint256,uint128)": FunctionFragment;
     "markBountyAsCompleted(uint256)": FunctionFragment;
+    "withdrawInvestments(uint256)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
-      | "acceptPayment"
+      | "acceptInvestorPayment"
       | "acceptWorker"
-      | "closeBounty"
+      | "acceptWorkerPayment"
+      | "cancelBounty"
       | "createBounty"
+      | "getAmountOfInvestments"
       | "getBounty"
       | "getInvestment"
       | "invest"
       | "markBountyAsCompleted"
+      | "withdrawInvestments"
   ): FunctionFragment;
 
   encodeFunctionData(
-    functionFragment: "acceptPayment",
+    functionFragment: "acceptInvestorPayment",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
@@ -96,7 +121,11 @@ export interface IWorkFiInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
-    functionFragment: "closeBounty",
+    functionFragment: "acceptWorkerPayment",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "cancelBounty",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
@@ -107,8 +136,13 @@ export interface IWorkFiInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>,
       PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getAmountOfInvestments",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "getBounty",
@@ -116,7 +150,7 @@ export interface IWorkFiInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getInvestment",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "invest",
@@ -126,9 +160,13 @@ export interface IWorkFiInterface extends utils.Interface {
     functionFragment: "markBountyAsCompleted",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
+  encodeFunctionData(
+    functionFragment: "withdrawInvestments",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
 
   decodeFunctionResult(
-    functionFragment: "acceptPayment",
+    functionFragment: "acceptInvestorPayment",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -136,11 +174,19 @@ export interface IWorkFiInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "closeBounty",
+    functionFragment: "acceptWorkerPayment",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "cancelBounty",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "createBounty",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getAmountOfInvestments",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getBounty", data: BytesLike): Result;
@@ -151,6 +197,10 @@ export interface IWorkFiInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "invest", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "markBountyAsCompleted",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "withdrawInvestments",
     data: BytesLike
   ): Result;
 
@@ -184,7 +234,7 @@ export interface IWorkFi extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    acceptPayment(
+    acceptInvestorPayment(
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -195,30 +245,42 @@ export interface IWorkFi extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    closeBounty(
+    acceptWorkerPayment(
+      bountyId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    cancelBounty(
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     createBounty(
-      stablePay: PromiseOrValue<BigNumberish>,
-      nativePay: PromiseOrValue<BigNumberish>,
+      workerStablePay: PromiseOrValue<BigNumberish>,
+      workerNativePay: PromiseOrValue<BigNumberish>,
       exchangeRate: PromiseOrValue<BigNumberish>,
       nativeToken: PromiseOrValue<string>,
       stablecoin: PromiseOrValue<string>,
+      dailyYieldPercentage: PromiseOrValue<BigNumberish>,
       deadline: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    getBounty(
-      bountyId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[IWorkFi.BountyMetadataStructOutput]>;
-
-    getInvestment(
+    getAmountOfInvestments(
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    getBounty(
+      bountyId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BountyMetadataStructOutput]>;
+
+    getInvestment(
+      bountyId: PromiseOrValue<BigNumberish>,
+      investmentId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[IWorkFi.InvestmentMetadataStructOutput]>;
 
     invest(
       bountyId: PromiseOrValue<BigNumberish>,
@@ -230,9 +292,14 @@ export interface IWorkFi extends BaseContract {
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    withdrawInvestments(
+      bountyId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
   };
 
-  acceptPayment(
+  acceptInvestorPayment(
     bountyId: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
@@ -243,30 +310,42 @@ export interface IWorkFi extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  closeBounty(
+  acceptWorkerPayment(
+    bountyId: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  cancelBounty(
     bountyId: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   createBounty(
-    stablePay: PromiseOrValue<BigNumberish>,
-    nativePay: PromiseOrValue<BigNumberish>,
+    workerStablePay: PromiseOrValue<BigNumberish>,
+    workerNativePay: PromiseOrValue<BigNumberish>,
     exchangeRate: PromiseOrValue<BigNumberish>,
     nativeToken: PromiseOrValue<string>,
     stablecoin: PromiseOrValue<string>,
+    dailyYieldPercentage: PromiseOrValue<BigNumberish>,
     deadline: PromiseOrValue<BigNumberish>,
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  getBounty(
-    bountyId: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<IWorkFi.BountyMetadataStructOutput>;
-
-  getInvestment(
+  getAmountOfInvestments(
     bountyId: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  getBounty(
+    bountyId: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BountyMetadataStructOutput>;
+
+  getInvestment(
+    bountyId: PromiseOrValue<BigNumberish>,
+    investmentId: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<IWorkFi.InvestmentMetadataStructOutput>;
 
   invest(
     bountyId: PromiseOrValue<BigNumberish>,
@@ -279,8 +358,13 @@ export interface IWorkFi extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  withdrawInvestments(
+    bountyId: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
-    acceptPayment(
+    acceptInvestorPayment(
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -291,30 +375,42 @@ export interface IWorkFi extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    closeBounty(
+    acceptWorkerPayment(
+      bountyId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    cancelBounty(
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
     createBounty(
-      stablePay: PromiseOrValue<BigNumberish>,
-      nativePay: PromiseOrValue<BigNumberish>,
+      workerStablePay: PromiseOrValue<BigNumberish>,
+      workerNativePay: PromiseOrValue<BigNumberish>,
       exchangeRate: PromiseOrValue<BigNumberish>,
       nativeToken: PromiseOrValue<string>,
       stablecoin: PromiseOrValue<string>,
+      dailyYieldPercentage: PromiseOrValue<BigNumberish>,
       deadline: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getAmountOfInvestments(
+      bountyId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getBounty(
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<IWorkFi.BountyMetadataStructOutput>;
+    ): Promise<BountyMetadataStructOutput>;
 
     getInvestment(
       bountyId: PromiseOrValue<BigNumberish>,
+      investmentId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<IWorkFi.InvestmentMetadataStructOutput>;
 
     invest(
       bountyId: PromiseOrValue<BigNumberish>,
@@ -323,6 +419,11 @@ export interface IWorkFi extends BaseContract {
     ): Promise<void>;
 
     markBountyAsCompleted(
+      bountyId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    withdrawInvestments(
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -331,7 +432,7 @@ export interface IWorkFi extends BaseContract {
   filters: {};
 
   estimateGas: {
-    acceptPayment(
+    acceptInvestorPayment(
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
@@ -342,19 +443,30 @@ export interface IWorkFi extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    closeBounty(
+    acceptWorkerPayment(
+      bountyId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    cancelBounty(
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     createBounty(
-      stablePay: PromiseOrValue<BigNumberish>,
-      nativePay: PromiseOrValue<BigNumberish>,
+      workerStablePay: PromiseOrValue<BigNumberish>,
+      workerNativePay: PromiseOrValue<BigNumberish>,
       exchangeRate: PromiseOrValue<BigNumberish>,
       nativeToken: PromiseOrValue<string>,
       stablecoin: PromiseOrValue<string>,
+      dailyYieldPercentage: PromiseOrValue<BigNumberish>,
       deadline: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    getAmountOfInvestments(
+      bountyId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getBounty(
@@ -364,6 +476,7 @@ export interface IWorkFi extends BaseContract {
 
     getInvestment(
       bountyId: PromiseOrValue<BigNumberish>,
+      investmentId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -374,13 +487,18 @@ export interface IWorkFi extends BaseContract {
     ): Promise<BigNumber>;
 
     markBountyAsCompleted(
+      bountyId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    withdrawInvestments(
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    acceptPayment(
+    acceptInvestorPayment(
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
@@ -391,19 +509,30 @@ export interface IWorkFi extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    closeBounty(
+    acceptWorkerPayment(
+      bountyId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    cancelBounty(
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     createBounty(
-      stablePay: PromiseOrValue<BigNumberish>,
-      nativePay: PromiseOrValue<BigNumberish>,
+      workerStablePay: PromiseOrValue<BigNumberish>,
+      workerNativePay: PromiseOrValue<BigNumberish>,
       exchangeRate: PromiseOrValue<BigNumberish>,
       nativeToken: PromiseOrValue<string>,
       stablecoin: PromiseOrValue<string>,
+      dailyYieldPercentage: PromiseOrValue<BigNumberish>,
       deadline: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    getAmountOfInvestments(
+      bountyId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getBounty(
@@ -413,6 +542,7 @@ export interface IWorkFi extends BaseContract {
 
     getInvestment(
       bountyId: PromiseOrValue<BigNumberish>,
+      investmentId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -423,6 +553,11 @@ export interface IWorkFi extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     markBountyAsCompleted(
+      bountyId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    withdrawInvestments(
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
