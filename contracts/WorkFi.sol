@@ -195,6 +195,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		stablecoinContract.transferFrom(msg.sender, address(this), stableAmount);
 	}
 
+	// TODO: Write tests
 	function acceptWorkerPayment(uint256 bountyId) external override nonReentrant {
 		if (bountyId > bounties.length) {
 			revert BountyDoesNotExist();
@@ -220,6 +221,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		stablecoin.transfer(bounty.worker, workerStablePay);
 	}
 
+	// TODO: Write tests
 	function acceptInvestorPayment(uint256 bountyId) external override nonReentrant {
 		if (bountyId > bounties.length) {
 			revert BountyDoesNotExist();
@@ -257,6 +259,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		}
 	}
 
+	// TODO: Write tests
 	function markBountyAsCompleted(uint256 bountyId) external override {
 		if (bountyId > bounties.length) {
 			revert BountyDoesNotExist();
@@ -281,6 +284,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		emit BountyCompleted(bountyId);
 	}
 
+	// TODO: Write tests
 	function cancelBounty(uint256 bountyId) external override {
 		if (bountyId > bounties.length) {
 			revert BountyDoesNotExist();
@@ -315,6 +319,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		stablecoin.transfer(bounty.recruiter, bounty.initialWorkerStablePay);
 	}
 
+	// TODO: Write tests
 	function withdrawInvestments(uint256 bountyId) external override {
 		BountyMetadata storage bounty = bounties[bountyId - 1];
 		if (bounty.status != BountyStatus.Cancelled) {

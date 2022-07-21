@@ -4,8 +4,6 @@ import * as hre from "hardhat";
 import { deployWorkFi } from "../scripts/utils";
 import { ERC20, MockERC20, WorkFi } from "../typechain-types";
 
-
-
 describe("WorkFi", function () {
    const stablePay = BigNumber.from(0);
    const nativePay = BigNumber.from('1');
