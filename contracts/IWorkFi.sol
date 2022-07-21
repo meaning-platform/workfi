@@ -1,65 +1,62 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
+import './Bounty.sol';
 
 interface IWorkFi {
 
-    struct BountyMetadata {
+	struct InvestmentMetadata {
+		uint128 stableAmount;
+		uint128 nativeTokenPayment;
+	}
 
-        uint128 stablePay; // Amount of stablecoin to pay worker
-        uint128 nativePay; // Amount of NT to pay worker
-        uint96 exchangeRate; // Amount of NT 1 DAI can buy
-        address stablecoin; // stable contract address
-        address nativeToken; // NT contract address
+	/////////////////
+	// WRITE FUNCTIONS
+	/////////////////
 
-        address worker;
-        address recruiter;
-        bool isCompleted; // Whether bounty is considered completed by the recruiter, unlocking withdrawal.
-        uint256 deadline; // In seconds since Unix Epoch
-        bool hasWorkerBeenPaid;
-        
-        // TODO: Apr and calculate apr pool for investors and transfer it as well
-    }
+	/// Called by the recruiter to accept an address as a valid worker.
+	function acceptWorker(uint256 bountyId, address worker) external;
 
-    /////////////////
-    // WRITE FUNCTIONS
-    /////////////////
-
-    /// Called by the recruiter to accept an address as a valid worker.
-    function acceptWorker(uint256 bountyId, address worker) external;
-
-    /// Called by recruiter in creation of a bounty.
-    /// @return Id of created bounty 
-    function createBounty(
-        uint128 stablePay, // Initial amount of stable coin
-        uint128 nativePay, // Amount of native coin
-        uint96 exchangeRate, // Amount of native token 1 DAI can buy
-        address nativeToken, // Address of native token
+	/// Called by recruiter in creation of a bounty.
+	/// @return Id of created bounty
+	function createBounty(
+		uint128 workerStablePay, // Initial amount of stable coin
+		uint128 workerNativePay, // Amount of native coin
+		uint96 exchangeRate, // Amount of native token 1 DAI can buy
+		address nativeToken, // Address of native token
 		address stablecoin, // Address of stablecoin
-        uint256 deadline // Deadline of bounty (in seconds after UNIX epoch)
-    ) payable external returns (uint256);
+		uint128 dailyYieldPercentage, // APR/365. Basis point, the first two integers are the decimals. E.g: 0,27%=27
+		uint256 deadline // Deadline of bounty (in seconds after UNIX epoch)
+	) external payable returns (uint256);
 
-    /// Called by the investor to invest in bounty.
-    function invest(uint256 bountyId, uint128 stableAmount) external;
+	/// Called by the investor to invest in bounty.
+	function invest(uint256 bountyId, uint128 stableAmount) external;
 
-    // TODO: Would be better for each worker and investor to withdraw individually, especially for security reasons if an investor address would be a contract
-    /// Called by the worker to receive payment. Investors will receive their NT accordingly.
-    function acceptPayment(uint256 bountyId) external;
+	/// Called by the worker to receive payment. This also closes the investment opportunity.
+	function acceptWorkerPayment(uint256 bountyId) external;
 
-    ///  Marks the bounty as completed by the recruiter, unlocking withdrawal.
-    function markBountyAsCompleted(uint256 bountyId) external;
+	/// Called by am investor to receive payment. Can only be called once the investment opportunity has been closed.
+	function acceptInvestorPayment(uint256 bountyId) external;
 
-    // Close the bounty, returning to everyone the tokens they invested
-    function closeBounty(uint256 bountyId) external;
+	///  Marks the bounty as completed by the recruiter, unlocking withdrawal.
+	function markBountyAsCompleted(uint256 bountyId) external;
 
-    /////////////////
-    // VIEW FUNCTIONS
-    /////////////////
+	// Cancel the bounty, returning to everyone the tokens they invested
+	function cancelBounty(uint256 bountyId) external;
 
-    /// Get information of a bounty.
-    function getBounty(uint256 bountyId) external view returns (BountyMetadata memory);
+    // Withdraw investments from a cancelled bounty
+    function withdrawInvestments(uint256 bountyId) external;
 
-    /// Gets the investment the sender has put in the bounty
-    function getInvestment(uint256 bountyId) external view returns(uint256);
+	/////////////////
+	// VIEW FUNCTIONS
+	/////////////////
+
+	/// Get information of a bounty.
+	function getBounty(uint256 bountyId) external view returns (BountyMetadata memory);
+
+	function getAmountOfInvestments(uint256 bountyId) external view returns (uint256);
+
+	/// Gets an investment the sender has put in the bounty
+	function getInvestment(uint256 bountyId, uint256 investmentId) external view returns (InvestmentMetadata memory);
 }
