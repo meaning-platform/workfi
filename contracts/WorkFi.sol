@@ -235,7 +235,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 			revert NotAnInvestor();
 		}
 
-		// TODO: Max amount of investments to prevent large loops ? Only blocks the investor itself though
+		// TODO: Max amount of investments to prevent large loops ? Only blocks the investor itself though. Or maybe allow interacting with 1 investment at a time or batches of them. Or maybe allow interacting with 1 investment at a time or batches of them. Or maybe allow interacting with 1 investment at a time or batches of them
 		uint128 payment = 0;
 		for (uint256 i = 0; i < investments[bountyId][msg.sender].length; i++) {
 			payment += investments[bountyId][msg.sender][i].nativeTokenPayment;
@@ -329,7 +329,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 			revert NotAnInvestor();
 		}
 
-		// TODO: Max amount of investments to prevent large loops ? Only blocks the investor itself though
+		// TODO: Max amount of investments to prevent large loops ? Only blocks the investor itself though. Or maybe allow interacting with 1 investment at a time or batches of them. Or maybe allow interacting with 1 investment at a time or batches of them. Or maybe allow interacting with 1 investment at a time or batches of them
 		uint128 stableInvestment = 0;
 		for (uint256 i = 0; i < investments[bountyId][msg.sender].length; i++) {
 			stableInvestment += investments[bountyId][msg.sender][i].stableAmount;
