@@ -8,6 +8,7 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
+import 'hardhat/console.sol';
 
 // TODO: tests for unhappy paths (errors etc)
 // TODO: Check arithmetic operations
@@ -23,7 +24,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 	mapping(address => bool) whitelistedStablecoins;
 
 	address constant ETH_ADDRESS = address(0);
-	uint256 constant INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT = 3000; // 30%
+	uint256 constant INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT = 30_00; // 30%
 
 	event BountyCreated(uint256 indexed bountyId, address indexed recruiter);
 	event WorkerAccepted(uint256 indexed bountyId, address indexed worker);
@@ -169,7 +170,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		if (msg.sender == bounty.recruiter) {
 			revert RecruiterCannotInvest();
 		}
-		uint128 maxPossibleInvestment = bounty.workerNativePay * bounty.exchangeRate;
+		uint128 maxPossibleInvestment = getStableNeeded(bounty.workerNativePay, bounty.exchangeRate);
 		if (stableAmount > maxPossibleInvestment) {
 			revert MaxInvestmentExceeded(maxPossibleInvestment);
 		}
@@ -376,15 +377,18 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		uint128 dailyYieldPercentage,
 		uint256 bountyCreationDate,
 		uint256 workerDeadline
-	) public pure returns (uint128) {
-		uint128 stableNeeded = workerNativePay * exchangeRate;
+	) public view returns (uint128) {
+		uint128 stableNeeded = getStableNeeded(workerNativePay, exchangeRate);
+		console.log(stableNeeded);
 		uint128 investmentOpportunityDays = DeadlineUtils.getDaysBeforeInvestmentOpportunityDeadline(
 			bountyCreationDate,
 			bountyCreationDate,
 			workerDeadline,
 			INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT
 		);
+		console.log(investmentOpportunityDays);
 		uint128 totalYieldInStable = calculateTotalYield(stableNeeded, dailyYieldPercentage, investmentOpportunityDays);
+		console.log(totalYieldInStable);
 		return totalYieldInStable * exchangeRate;
 	}
 
@@ -394,5 +398,9 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		uint128 daysBeforeInvestmentOpportunityCloses
 	) private pure returns (uint128) {
 		return uint128(MathUtils.calculatePercentage(stableAmount, dailyYieldPercentage) * daysBeforeInvestmentOpportunityCloses);
+	}
+
+	function getStableNeeded(uint128 nativePay, uint128 exchangeRate) private pure returns(uint128) {
+		return nativePay * exchangeRate;
 	}
 }

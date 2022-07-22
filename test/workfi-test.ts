@@ -201,6 +201,21 @@ describe("WorkFi", function () {
       await expect(workFiWithInvestorSigner.invest(1, stableInvestment)).to.be.revertedWith(`MaxInvestmentExceeded(${maxStableInvestmentPossible})`);
    });
 
+   it('calculates the yield pool correctly', async () => {
+      const workFi = await deployWorkFi();
+      const dailyYield = 100_00; // 100%
+      const bountyCreationDate = Date.now() / 1000;
+      const deadline = bountyCreationDate + days(30);
+      const yieldPool = await workFi.calculateYieldPool(
+         nativePay,
+         exchangeRate,
+         dailyYield,
+         bountyCreationDate,
+         deadline
+      );
+      expect(yieldPool).to.eq(7800);
+   });
+
    // TODO: Case where stablePay > 0
    it('pays the worker when the recruiter marked the task as completed and the worker calls acceptWorkerPayment()', async () => {
       const { stablecoin,
