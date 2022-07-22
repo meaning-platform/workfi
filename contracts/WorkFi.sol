@@ -9,10 +9,10 @@ import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
 
+// TODO: If worker not found after worker deadline, everyone egts refunded but yield goes to investors because of the risk
 // TODO: tests for unhappy paths (errors etc)
 // TODO: Check arithmetic operations
 // TODO Security: double check all type conversions
-// TODO: What if a worker has not been found, how do investors recover their funds and recruiter doenst loose theirs ?
 contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 	using Address for address payable;
 	using BountyUtils for BountyMetadata;
