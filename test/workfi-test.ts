@@ -191,6 +191,47 @@ describe("WorkFi", function () {
       const workFiWithInvestorSigner = workFi.connect(investor);
       await expect(workFiWithInvestorSigner.invest(1, stableInvestment)).to.be.revertedWith(`MaxInvestmentExceeded(${maxStableInvestmentPossible})`);
    });
+
+   it('pays the worker when the recruiter marked the task as completed and the worker calls acceptWorkerPayment()', async () => {
+      const { stablecoin,
+         nativeToken,
+         workFi,
+         deadline,
+         contractDeployerAndRecruiter,
+         recruiterAddress,
+         investor,
+         investorAddress,
+         workerAddresses,
+         workers } = await prepare();
+      await (await workFi.createBounty(
+         stablePay,
+         nativePay,
+         exchangeRate,
+         nativeToken.address,
+         stablecoin.address,
+         27,
+         deadline
+      )).wait();
+      const bountyId = 1;
+      await (await workFi.acceptWorker(bountyId, workerAddresses[0])).wait();
+      await (await workFi.markBountyAsCompleted(bountyId)).wait();
+      const nativeWorkerBalanceBefore = await nativeToken.balanceOf(workerAddresses[0]);
+      const stableWorkerBalanceBefore = await stablecoin.balanceOf(workerAddresses[0]);
+
+      await (await workFi.connect(workers[0]).acceptWorkerPayment(bountyId)).wait();
+
+      const nativeWorkerBalanceAfter = await nativeToken.balanceOf(workerAddresses[0]);
+      const stableWorkerBalanceAfter = await stablecoin.balanceOf(workerAddresses[0]);
+      expect(nativeWorkerBalanceAfter).to.eq(nativeWorkerBalanceBefore.add(nativePay));
+      expect(stableWorkerBalanceAfter).to.eq(stableWorkerBalanceBefore.add(stablePay));
+      const filter = workFi.filters.WorkerPaymentAccepted(bountyId);
+      const events = await workFi.queryFilter(filter);
+      expect(events.length).to.eq(1);
+      const event = events[0];
+      expect(event.args.nativePay).to.eq(nativePay);
+      expect(event.args.stablePay).to.eq(stablePay);
+   });
+
 });
 
 
@@ -210,7 +251,8 @@ async function prepare() {
    const recruiterAddress = await contractDeployerAndRecruiter.getAddress();
    const investor = signers[1];
    const investorAddress = await investor.getAddress();
-   const workerAddresses = await Promise.all(signers.slice(2).map(s => s.getAddress()));
+   const workers = signers.slice(2);
+   const workerAddresses = await Promise.all(workers.map(s => s.getAddress()));
 
    return {
       nativeToken,
@@ -221,7 +263,8 @@ async function prepare() {
       recruiterAddress,
       investor,
       investorAddress,
-      workerAddresses
+      workers,
+      workerAddresses,
    }
 }
 
