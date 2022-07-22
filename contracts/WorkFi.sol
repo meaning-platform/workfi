@@ -8,7 +8,6 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
-import 'hardhat/console.sol';
 
 // TODO: tests for unhappy paths (errors etc)
 // TODO: Check arithmetic operations
@@ -377,18 +376,15 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		uint128 dailyYieldPercentage,
 		uint256 bountyCreationDate,
 		uint256 workerDeadline
-	) public view returns (uint128) {
+	) public pure returns (uint128) {
 		uint128 stableNeeded = getStableNeeded(workerNativePay, exchangeRate);
-		console.log(stableNeeded);
 		uint128 investmentOpportunityDays = DeadlineUtils.getDaysBeforeInvestmentOpportunityDeadline(
 			bountyCreationDate,
 			bountyCreationDate,
 			workerDeadline,
 			INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT
 		);
-		console.log(investmentOpportunityDays);
 		uint128 totalYieldInStable = calculateTotalYield(stableNeeded, dailyYieldPercentage, investmentOpportunityDays);
-		console.log(totalYieldInStable);
 		return totalYieldInStable * exchangeRate;
 	}
 
