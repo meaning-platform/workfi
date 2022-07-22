@@ -363,7 +363,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		if (bountyId > bounties.length) {
 			revert BountyDoesNotExist();
 		}
-		return investments[bountyId][msg.sender][investmentId];
+		return investments[bountyId][msg.sender][investmentId-1];
 	}
 
 	/////////////////
