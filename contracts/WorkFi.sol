@@ -9,7 +9,8 @@ import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
 
-// TODO Security: double check all type
+// TODO: Check arithmetic operations
+// TODO Security: double check all type conversions
 // TODO: What if a worker has not been found, how do investors recover their funds and recruiter doenst loose theirs ?
 contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 	using Address for address payable;
@@ -165,12 +166,11 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		if (msg.sender == bounty.recruiter) {
 			revert RecruiterCannotInvest();
 		}
-		uint128 maxPossibleInvestment = bounty.workerNativePay / bounty.exchangeRate;
+		uint128 maxPossibleInvestment = bounty.workerNativePay * bounty.exchangeRate;
 		if (stableAmount > maxPossibleInvestment) {
 			revert MaxInvestmentExceeded(maxPossibleInvestment);
 		}
-
-		uint128 workerNativePayGoingToTheInvestor = stableAmount * bounty.exchangeRate;
+		uint128 workerNativePayGoingToTheInvestor = stableAmount / bounty.exchangeRate;
 		bounty.workerNativePay -= workerNativePayGoingToTheInvestor;
 		bounty.workerStablePay += stableAmount;
 
@@ -377,7 +377,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		uint256 bountyCreationDate,
 		uint256 workerDeadline
 	) public pure returns (uint128) {
-		uint128 stableNeeded = workerNativePay / exchangeRate;
+		uint128 stableNeeded = workerNativePay * exchangeRate;
 		uint128 investmentOpportunityDays = DeadlineUtils.getDaysBeforeInvestmentOpportunityDeadline(
 			bountyCreationDate,
 			bountyCreationDate,

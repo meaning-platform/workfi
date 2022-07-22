@@ -151,7 +151,7 @@ describe("WorkFi", function () {
       expect(workFiStableBalanceAfter).to.eq(workFiStableBalanceBefore.add(maxPossibleStableInvestment));
       const bounty = await workFi.getBounty(events[0].args.bountyId);
       expect(bounty.workerStablePay).to.eq(stablePay.add(maxPossibleStableInvestment));
-      expect(bounty.workerNativePay).to.eq(nativePay);
+      expect(bounty.workerNativePay).to.eq(0);
       expect(bounty.exchangeRate).to.eq(exchangeRate);
       expect(bounty.nativeToken).to.eq(nativeToken.address);
       expect(bounty.worker).to.eq(hre.ethers.constants.AddressZero);

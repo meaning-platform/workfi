@@ -13,7 +13,7 @@ enum BountyStatus {
 struct BountyMetadata {
 	uint128 workerStablePay; // Amount of stablecoin to pay worker
 	uint128 workerNativePay; // Amount of NT to pay worker
-	uint96 exchangeRate; // Amount of NT 1 DAI can buy
+	uint96 exchangeRate; // How much stable is required to buy 1 NT
 	address stablecoin; // stable contract address
 	address nativeToken; // NT contract address
 	uint128 dailyYieldPercentage; // APR/365 in basis point, e.g 0.27% = 27
