@@ -9,6 +9,7 @@ import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
 
+// TODO: tests for unhappy paths (errors etc)
 // TODO: Check arithmetic operations
 // TODO Security: double check all type conversions
 // TODO: What if a worker has not been found, how do investors recover their funds and recruiter doenst loose theirs ?
@@ -95,16 +96,17 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		uint128 dailyYieldPercentage,
 		uint256 workerDeadline
 	) external payable override nonReentrant returns (uint256) {
+		uint128 yieldPool = calculateYieldPool(
+			workerNativePay,
+			exchangeRate,
+			dailyYieldPercentage,
+			block.timestamp,
+			workerDeadline
+		);
+		uint128 amountOfNtOnBounty = workerNativePay + yieldPool;
 		if (nativeToken == ETH_ADDRESS) {
-			if (workerNativePay != msg.value) {
-				uint128 yieldPool = calculateYieldPool(
-					workerNativePay,
-					exchangeRate,
-					dailyYieldPercentage,
-					block.timestamp,
-					workerDeadline
-				);
-				revert ThisAmountOfEthIsRequired(workerNativePay + yieldPool);
+			if (msg.value != amountOfNtOnBounty) {
+				revert ThisAmountOfEthIsRequired(amountOfNtOnBounty);
 			}
 		} else {
 			if (msg.value > 0) {
@@ -138,10 +140,10 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		emit BountyCreated(bounties.length, msg.sender);
 
 		if (nativeToken != ETH_ADDRESS) {
-			// TODO: Check if supports interface
+			// TODO: Check if supports interface for security ?
 			IERC20 token = IERC20(nativeToken);
 			// TODO: Use Escrow or other Payment contract ? https://docs.openzeppelin.com/contracts/2.x/api/payment
-			token.transferFrom(msg.sender, address(this), workerNativePay);
+			token.transferFrom(msg.sender, address(this), amountOfNtOnBounty);
 		}
 
 		if (workerStablePay > 0) {
@@ -152,6 +154,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		return bounties.length;
 	}
 
+	// TODO: Investor should not have all yield if investment opportunity closes earlier
 	function invest(uint256 bountyId, uint128 stableAmount) external override {
 		if (bountyId > bounties.length) {
 			revert BountyDoesNotExist();
@@ -195,7 +198,6 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		stablecoinContract.transferFrom(msg.sender, address(this), stableAmount);
 	}
 
-	// TODO: Write tests
 	function acceptWorkerPayment(uint256 bountyId) external override nonReentrant {
 		if (bountyId > bounties.length) {
 			revert BountyDoesNotExist();
@@ -221,7 +223,6 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		stablecoin.transfer(bounty.worker, workerStablePay);
 	}
 
-	// TODO: Write tests
 	function acceptInvestorPayment(uint256 bountyId) external override nonReentrant {
 		if (bountyId > bounties.length) {
 			revert BountyDoesNotExist();
@@ -259,7 +260,6 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		}
 	}
 
-	// TODO: Write tests
 	function markBountyAsCompleted(uint256 bountyId) external override {
 		if (bountyId > bounties.length) {
 			revert BountyDoesNotExist();
@@ -369,7 +369,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 	/////////////////
 	// PURE FUNCTIONS
 	/////////////////
-
+	// TODO: Write test
 	function calculateYieldPool(
 		uint128 workerNativePay,
 		uint128 exchangeRate,

@@ -20,6 +20,7 @@ describe("WorkFi", function () {
          investorAddress,
          workerAddresses } = await prepare();
       const nativeBalanceBefore = await nativeToken.balanceOf(recruiterAddress);
+      const dailyYield = 100_00; // 100%
 
       await (await workFi.createBounty(
          stablePay,
@@ -27,17 +28,25 @@ describe("WorkFi", function () {
          exchangeRate,
          nativeToken.address,
          stablecoin.address,
-         27,
+         dailyYield,
          deadline
       )).wait();
 
-      const nativeBalanceAfter = await nativeToken.balanceOf(recruiterAddress);
-      expect(nativeBalanceAfter).to.eq(nativeBalanceBefore.sub(nativePay));
       const bountyId = 1;
+      const bounty = await workFi.getBounty(bountyId);
+      const yieldPool = await workFi.calculateYieldPool(
+         nativePay,
+         exchangeRate,
+         dailyYield,
+         bounty.creationDate,
+         deadline
+      );
+      const expectedAmountOfNtTransferredToWorkFi = nativePay.add(yieldPool);
+      const nativeBalanceAfter = await nativeToken.balanceOf(recruiterAddress);
+      expect(nativeBalanceAfter).to.eq(nativeBalanceBefore.sub(expectedAmountOfNtTransferredToWorkFi));
       const filter = workFi.filters.BountyCreated(bountyId, recruiterAddress);
       const events = await workFi.queryFilter(filter);
       expect(events.length).to.eq(1);
-      const bounty = await workFi.getBounty(events[0].args.bountyId);
       expect(bounty.workerStablePay).to.eq(stablePay);
       expect(bounty.workerNativePay).to.eq(nativePay);
       expect(bounty.exchangeRate).to.eq(exchangeRate);
@@ -192,6 +201,7 @@ describe("WorkFi", function () {
       await expect(workFiWithInvestorSigner.invest(1, stableInvestment)).to.be.revertedWith(`MaxInvestmentExceeded(${maxStableInvestmentPossible})`);
    });
 
+   // TODO: Case where stablePay > 0
    it('pays the worker when the recruiter marked the task as completed and the worker calls acceptWorkerPayment()', async () => {
       const { stablecoin,
          nativeToken,
@@ -232,6 +242,60 @@ describe("WorkFi", function () {
       expect(event.args.stablePay).to.eq(stablePay);
    });
 
+   // TODO: Case where initial stablePay > 0
+   it('pays the investor when the worker has accepted the payment when calling acceptInvestorPayment', async () => {
+      const { stablecoin,
+         nativeToken,
+         workFi,
+         deadline,
+         contractDeployerAndRecruiter,
+         recruiterAddress,
+         investor,
+         investorAddress,
+         workerAddresses,
+         workers } = await prepare();
+      // TODO: Small numbers with small nativeToken / exchangeRate
+      const dailyYield = 100_00; // 100% daily yield
+      await (await workFi.createBounty(
+         stablePay,
+         nativePay,
+         exchangeRate,
+         nativeToken.address,
+         stablecoin.address,
+         dailyYield,
+         deadline
+      )).wait();
+      const bountyId = 1;
+      const bounty = await workFi.getBounty(bountyId);
+      const yieldPool = await workFi.calculateYieldPool(
+         nativePay,
+         exchangeRate,
+         dailyYield,
+         bounty.creationDate,
+         deadline
+      );
+      const maxPossibleStableInvestment = nativePay.mul(exchangeRate);
+      const workfiWithInvestorSigner = workFi.connect(investor);
+      await stablecoin.connect(investor).approve(workFi.address, maxPossibleStableInvestment);
+      await stablecoin.transfer(investorAddress, maxPossibleStableInvestment); // transfer some stable to the investor since it doesn't have any for now
+      await (await workfiWithInvestorSigner.invest(bountyId, maxPossibleStableInvestment)).wait();
+      await (await workFi.acceptWorker(bountyId, workerAddresses[0])).wait();
+      await (await workFi.markBountyAsCompleted(bountyId)).wait();
+      await hre.ethers.provider.send('evm_increaseTime', [days(30 * 1.3)]); // investment opportunity closed
+      const investorNativeBalanceBefore = await stablecoin.balanceOf(investorAddress);
+
+      await (await workfiWithInvestorSigner.acceptInvestorPayment(bountyId)).wait();
+
+      const investorBalanceAfter = await stablecoin.balanceOf(investorAddress);
+      const expectedInvestorPayment = nativePay.add(yieldPool);
+      expect(investorBalanceAfter).to.eq(investorNativeBalanceBefore.add(expectedInvestorPayment));
+      const filter = workFi.filters.InvestorPaymentAccepted(bountyId);
+      const events = await workFi.queryFilter(filter);
+      expect(events.length).to.eq(1);
+      const event = events[0];
+      expect(event.args.payment).to.eq(expectedInvestorPayment);
+   });
+
 });
 
 
@@ -245,7 +309,7 @@ async function prepare() {
    const workFi = await deployWorkFi();
    await approveForManyTokens([nativeToken, stablecoin], workFi.address, hre.ethers.utils.parseEther('100'));
    await (await workFi.addStablecoinToWhitelist(stablecoin.address)).wait();
-   const deadline = await createDeadline(hours(1));
+   const deadline = await createDeadline(days(30));
    const signers = await hre.ethers.getSigners();
    const contractDeployerAndRecruiter = signers[0];
    const recruiterAddress = await contractDeployerAndRecruiter.getAddress();
@@ -284,6 +348,10 @@ function minutes(amount: number): number {
 
 function hours(amount: number): number {
    return minutes(60) * amount;
+}
+
+function days(amount: number): number {
+   return hours(24) * amount;
 }
 
 async function createDeadline(msFromCurrentBlock: number): Promise<number> {
