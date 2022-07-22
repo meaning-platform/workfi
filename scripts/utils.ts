@@ -1,6 +1,6 @@
 import * as hre from "hardhat";
 
-async function deployWithoutArguments(name: string, libraries?: any) {
+export async function deployWithoutArguments(name: string, libraries?: any) {
 	const Factory = await hre.ethers.getContractFactory(name, {
 		libraries
 	});
@@ -23,4 +23,21 @@ export async function deployWorkFi() {
 	const workfi = await WorkFi.deploy();
 	await workfi.deployed();
 	return workfi;
+}
+
+
+export function seconds(amount: number): number {
+	return amount * 1e3;
+}
+
+export function minutes(amount: number): number {
+	return seconds(60) * amount;
+}
+
+export function hours(amount: number): number {
+	return minutes(60) * amount;
+}
+
+export function days(amount: number): number {
+	return hours(24) * amount;
 }

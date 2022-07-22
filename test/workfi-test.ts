@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { BigNumber, BigNumberish, Contract, Signer } from "ethers";
 import * as hre from "hardhat";
-import { deployWorkFi } from "../scripts/utils";
+import { days, deployWorkFi } from "../scripts/utils";
 import { ERC20, MockERC20, WorkFi } from "../typechain-types";
 
 describe("WorkFi", function () {
@@ -353,24 +353,8 @@ async function approveForManyTokens(tokenContracts: ERC20[], address: string, am
    }
 }
 
-function seconds(amount: number): number {
-   return amount * 1e3;
-}
-
-function minutes(amount: number): number {
-   return seconds(60) * amount;
-}
-
-function hours(amount: number): number {
-   return minutes(60) * amount;
-}
-
-function days(amount: number): number {
-   return hours(24) * amount;
-}
-
 async function createDeadline(msFromCurrentBlock: number): Promise<number> {
    const blockNumber = await hre.ethers.provider.getBlockNumber();
    const block = await hre.ethers.provider.getBlock(blockNumber);
-   return block.timestamp + hours(1);
+   return block.timestamp + msFromCurrentBlock;
 }
