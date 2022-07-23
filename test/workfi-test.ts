@@ -1,7 +1,8 @@
 import { expect } from "chai";
 import { BigNumber, BigNumberish, Contract, Signer } from "ethers";
 import * as hre from "hardhat";
-import { days, deployWorkFi } from "../scripts/utils";
+import { UnixTime } from "../scripts/time";
+import { deployWorkFi } from "../scripts/utils";
 import { ERC20, MockERC20, WorkFi } from "../typechain-types";
 
 describe("WorkFi", function () {
@@ -204,8 +205,8 @@ describe("WorkFi", function () {
    it('calculates the yield pool correctly', async () => {
       const workFi = await deployWorkFi();
       const dailyYield = 100_00; // 100%
-      const bountyCreationDate = Date.now() / 1000;
-      const deadline = bountyCreationDate + days(30);
+      const bountyCreationDate = UnixTime.now();
+      const deadline = bountyCreationDate + UnixTime.days(30);
       const yieldPool = await workFi.calculateYieldPool(
          nativePay,
          exchangeRate,
@@ -296,7 +297,7 @@ describe("WorkFi", function () {
       await (await workfiWithInvestorSigner.invest(bountyId, maxPossibleStableInvestment)).wait();
       await (await workFi.acceptWorker(bountyId, workerAddresses[0])).wait();
       await (await workFi.markBountyAsCompleted(bountyId)).wait();
-      await hre.ethers.provider.send('evm_increaseTime', [days(30 * 1.3)]); // investment opportunity closed
+      await hre.ethers.provider.send('evm_increaseTime', [UnixTime.days(30 * 1.3)]); // investment opportunity closed
       const investorNativeBalanceBefore = await stablecoin.balanceOf(investorAddress);
 
       await (await workfiWithInvestorSigner.acceptInvestorPayment(bountyId)).wait();
@@ -324,7 +325,7 @@ async function prepare() {
    const workFi = await deployWorkFi();
    await approveForManyTokens([nativeToken, stablecoin], workFi.address, hre.ethers.utils.parseEther('100'));
    await (await workFi.addStablecoinToWhitelist(stablecoin.address)).wait();
-   const deadline = await createDeadline(days(30));
+   const deadline = await createDeadline(UnixTime.days(30));
    const signers = await hre.ethers.getSigners();
    const contractDeployerAndRecruiter = signers[0];
    const recruiterAddress = await contractDeployerAndRecruiter.getAddress();

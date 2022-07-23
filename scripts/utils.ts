@@ -24,20 +24,3 @@ export async function deployWorkFi() {
 	await workfi.deployed();
 	return workfi;
 }
-
-
-export function seconds(amount: number): number {
-	return amount * 1e3;
-}
-
-export function minutes(amount: number): number {
-	return seconds(60) * amount;
-}
-
-export function hours(amount: number): number {
-	return minutes(60) * amount;
-}
-
-export function days(amount: number): number {
-	return hours(24) * amount;
-}

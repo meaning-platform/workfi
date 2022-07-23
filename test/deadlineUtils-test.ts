@@ -1,16 +1,17 @@
 import { expect } from "chai";
 import { BigNumber, BigNumberish, Contract, Signer } from "ethers";
 import * as hre from "hardhat";
-import { days, deployWithoutArguments, deployWorkFi, seconds } from "../scripts/utils";
+import { UnixTime } from "../scripts/time";
+import { deployWithoutArguments, deployWorkFi } from "../scripts/utils";
 import { ERC20, MockERC20, WorkFi } from "../typechain-types";
 
 describe("DeadlineUtils", function () {
    
     it('returns the correct value when calling getDaysBeforeDate', async () => {
         const deadlineUtils = await deployDeadlineUtils();
-        const today = Date.now() / seconds(1);
+        const today = UnixTime.now();
         const expectedDays = 30;
-        const futureDate = today + days(expectedDays);
+        const futureDate = today + UnixTime.days(expectedDays);
         
         expect(await deadlineUtils.getDaysBeforeDate(today, futureDate)).to.eq(expectedDays);
     });
