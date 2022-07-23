@@ -23,7 +23,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 	mapping(address => bool) whitelistedStablecoins;
 
 	address constant ETH_ADDRESS = address(0);
-	uint256 constant INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT = 30_00; // 30%
+	uint256 public constant INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT = 30_00; // 30%
 
 	event BountyCreated(uint256 indexed bountyId, address indexed recruiter);
 	event WorkerAccepted(uint256 indexed bountyId, address indexed worker);

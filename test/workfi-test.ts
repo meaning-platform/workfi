@@ -205,14 +205,21 @@ describe("WorkFi", function () {
       const workFi = await deployWorkFi();
       const dailyYield = 100_00; // 100%
       const bountyCreationDate = UnixTime.now();
-      const deadline = bountyCreationDate + UnixTime.days(30);
+      const workerDeadlineDuration = UnixTime.days(30);
+      const workerDeadline = bountyCreationDate + workerDeadlineDuration;
+      const investmentOpportunityPercentage = await workFi.INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT();
+      const investmentOpportunityDuration = workerDeadlineDuration + (workerDeadlineDuration * investmentOpportunityPercentage.toNumber()) / 10000;
+      const days = investmentOpportunityDuration / UnixTime.days(1);
+      const expectedYield = nativePay.mul(days);
+
       const yieldPool = await workFi.calculateYieldPool(
          nativePay,
          dailyYield,
          bountyCreationDate,
-         deadline
+         workerDeadline
       );
-      expect(yieldPool).to.eq(7800);
+      
+      expect(yieldPool).to.eq(expectedYield);
    });
 
    // TODO: Case where stablePay > 0

@@ -88,6 +88,7 @@ export declare namespace IWorkFi {
 
 export interface WorkFiInterface extends utils.Interface {
   functions: {
+    "INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT()": FunctionFragment;
     "acceptInvestorPayment(uint256)": FunctionFragment;
     "acceptWorker(uint256,address)": FunctionFragment;
     "acceptWorkerPayment(uint256)": FunctionFragment;
@@ -109,6 +110,7 @@ export interface WorkFiInterface extends utils.Interface {
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT"
       | "acceptInvestorPayment"
       | "acceptWorker"
       | "acceptWorkerPayment"
@@ -128,6 +130,10 @@ export interface WorkFiInterface extends utils.Interface {
       | "withdrawInvestments"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "acceptInvestorPayment",
     values: [PromiseOrValue<BigNumberish>]
@@ -207,6 +213,10 @@ export interface WorkFiInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "acceptInvestorPayment",
     data: BytesLike
@@ -447,6 +457,10 @@ export interface WorkFi extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT(
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     acceptInvestorPayment(
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -540,6 +554,10 @@ export interface WorkFi extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
+
+  INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT(
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   acceptInvestorPayment(
     bountyId: PromiseOrValue<BigNumberish>,
@@ -635,6 +653,10 @@ export interface WorkFi extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT(
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     acceptInvestorPayment(
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -823,6 +845,10 @@ export interface WorkFi extends BaseContract {
   };
 
   estimateGas: {
+    INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT(
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     acceptInvestorPayment(
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -918,6 +944,10 @@ export interface WorkFi extends BaseContract {
   };
 
   populateTransaction: {
+    INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     acceptInvestorPayment(
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
