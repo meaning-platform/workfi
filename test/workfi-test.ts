@@ -37,7 +37,6 @@ describe("WorkFi", function () {
       const bounty = await workFi.getBounty(bountyId);
       const yieldPool = await workFi.calculateYieldPool(
          nativePay,
-         exchangeRate,
          dailyYield,
          bounty.creationDate,
          deadline
@@ -209,7 +208,6 @@ describe("WorkFi", function () {
       const deadline = bountyCreationDate + UnixTime.days(30);
       const yieldPool = await workFi.calculateYieldPool(
          nativePay,
-         exchangeRate,
          dailyYield,
          bountyCreationDate,
          deadline
@@ -285,7 +283,6 @@ describe("WorkFi", function () {
       const bounty = await workFi.getBounty(bountyId);
       const yieldPool = await workFi.calculateYieldPool(
          nativePay,
-         exchangeRate,
          dailyYield,
          bounty.creationDate,
          deadline

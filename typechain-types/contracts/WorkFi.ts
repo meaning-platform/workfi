@@ -92,7 +92,7 @@ export interface WorkFiInterface extends utils.Interface {
     "acceptWorker(uint256,address)": FunctionFragment;
     "acceptWorkerPayment(uint256)": FunctionFragment;
     "addStablecoinToWhitelist(address)": FunctionFragment;
-    "calculateYieldPool(uint128,uint128,uint128,uint256,uint256)": FunctionFragment;
+    "calculateYieldPool(uint128,uint128,uint256,uint256)": FunctionFragment;
     "cancelBounty(uint256)": FunctionFragment;
     "createBounty(uint128,uint128,uint96,address,address,uint128,uint256)": FunctionFragment;
     "getAmountOfInvestments(uint256)": FunctionFragment;
@@ -147,7 +147,6 @@ export interface WorkFiInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "calculateYieldPool",
     values: [
-      PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
@@ -471,7 +470,6 @@ export interface WorkFi extends BaseContract {
 
     calculateYieldPool(
       workerNativePay: PromiseOrValue<BigNumberish>,
-      exchangeRate: PromiseOrValue<BigNumberish>,
       dailyYieldPercentage: PromiseOrValue<BigNumberish>,
       bountyCreationDate: PromiseOrValue<BigNumberish>,
       workerDeadline: PromiseOrValue<BigNumberish>,
@@ -566,7 +564,6 @@ export interface WorkFi extends BaseContract {
 
   calculateYieldPool(
     workerNativePay: PromiseOrValue<BigNumberish>,
-    exchangeRate: PromiseOrValue<BigNumberish>,
     dailyYieldPercentage: PromiseOrValue<BigNumberish>,
     bountyCreationDate: PromiseOrValue<BigNumberish>,
     workerDeadline: PromiseOrValue<BigNumberish>,
@@ -661,7 +658,6 @@ export interface WorkFi extends BaseContract {
 
     calculateYieldPool(
       workerNativePay: PromiseOrValue<BigNumberish>,
-      exchangeRate: PromiseOrValue<BigNumberish>,
       dailyYieldPercentage: PromiseOrValue<BigNumberish>,
       bountyCreationDate: PromiseOrValue<BigNumberish>,
       workerDeadline: PromiseOrValue<BigNumberish>,
@@ -850,7 +846,6 @@ export interface WorkFi extends BaseContract {
 
     calculateYieldPool(
       workerNativePay: PromiseOrValue<BigNumberish>,
-      exchangeRate: PromiseOrValue<BigNumberish>,
       dailyYieldPercentage: PromiseOrValue<BigNumberish>,
       bountyCreationDate: PromiseOrValue<BigNumberish>,
       workerDeadline: PromiseOrValue<BigNumberish>,
@@ -946,7 +941,6 @@ export interface WorkFi extends BaseContract {
 
     calculateYieldPool(
       workerNativePay: PromiseOrValue<BigNumberish>,
-      exchangeRate: PromiseOrValue<BigNumberish>,
       dailyYieldPercentage: PromiseOrValue<BigNumberish>,
       bountyCreationDate: PromiseOrValue<BigNumberish>,
       workerDeadline: PromiseOrValue<BigNumberish>,

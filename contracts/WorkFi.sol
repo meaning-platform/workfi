@@ -98,7 +98,6 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 	) external payable override nonReentrant returns (uint256) {
 		uint128 yieldPool = calculateYieldPool(
 			workerNativePay,
-			exchangeRate,
 			dailyYieldPercentage,
 			block.timestamp,
 			workerDeadline
@@ -306,7 +305,6 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 
 		uint128 yieldPool = calculateYieldPool(
 			bounty.initialWorkerNativePay,
-			bounty.exchangeRate,
 			bounty.dailyYieldPercentage,
 			block.timestamp,
 			bounty.workerDeadline
@@ -369,31 +367,27 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 	/////////////////
 	// PURE FUNCTIONS
 	/////////////////
-	// TODO: Write test
 	function calculateYieldPool(
 		uint128 workerNativePay,
-		uint128 exchangeRate,
 		uint128 dailyYieldPercentage,
 		uint256 bountyCreationDate,
 		uint256 workerDeadline
 	) public pure returns (uint128) {
-		uint128 stableNeeded = getStableNeeded(workerNativePay, exchangeRate);
 		uint128 investmentOpportunityDays = DeadlineUtils.getDaysBeforeInvestmentOpportunityDeadline(
 			bountyCreationDate,
 			bountyCreationDate,
 			workerDeadline,
 			INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT
 		);
-		uint128 totalYieldInStable = calculateTotalYield(stableNeeded, dailyYieldPercentage, investmentOpportunityDays);
-		return totalYieldInStable * exchangeRate;
+		return calculateTotalYield(workerNativePay, dailyYieldPercentage, investmentOpportunityDays);
 	}
 
 	function calculateTotalYield(
-		uint128 stableAmount,
+		uint128 initialValue,
 		uint128 dailyYieldPercentage,
 		uint128 daysBeforeInvestmentOpportunityCloses
 	) private pure returns (uint128) {
-		return uint128(MathUtils.calculatePercentage(stableAmount, dailyYieldPercentage) * daysBeforeInvestmentOpportunityCloses);
+		return uint128(MathUtils.calculatePercentage(initialValue, dailyYieldPercentage) * daysBeforeInvestmentOpportunityCloses);
 	}
 
 	function getStableNeeded(uint128 nativePay, uint128 exchangeRate) private pure returns(uint128) {
