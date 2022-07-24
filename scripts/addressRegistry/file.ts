@@ -1,7 +1,7 @@
 import { writeFileSync } from "fs";
 import { AddressRegistry } from "./types";
 
-const ADDRESS_REGISTRY_FILE = './addresses.js';
+const ADDRESS_REGISTRY_FILE = './addresses.ts';
 
 export function writeAddressRegistryFile(registry: AddressRegistry) {
 	const content = generateAddressRegistryFileContent(registry);
@@ -9,11 +9,8 @@ export function writeAddressRegistryFile(registry: AddressRegistry) {
 }
 
 function generateAddressRegistryFileContent(registry: AddressRegistry): string {
-	return `
-	import './addressRegistryUtils';
-	import { AddressRegistry } from './addressRegistryUtils';
+	return `import { AddressRegistry } from './scripts/addressRegistry/types';
 	
 	/// Contains deployed addresses of all smart contracts
-	export const ADDRESS_REGISTRY: AddressRegistry = ${JSON.stringify(registry, null, 1)};
-`;
+	export const ADDRESS_REGISTRY: AddressRegistry = ${JSON.stringify(registry, null, 1)};`;
 }

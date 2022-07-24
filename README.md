@@ -11,5 +11,5 @@ npx hardhat node
 ```
 and deploy a smartcontract to it:
 ```
-npx hardhat run scripts/deploy.js --network localhost
+npx hardhat run scripts/deploy.ts --network localhost
 ```
