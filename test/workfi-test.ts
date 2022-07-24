@@ -55,6 +55,7 @@ describe("WorkFi", function () {
       expect(bounty.recruiter).to.eq(recruiterAddress);
       expect(bounty.status).to.eq(0);
       expect(bounty.workerDeadline).to.eq(deadline);
+      expect(bounty.workerPaidAt).to.eq(0);
    });
 
    it('accepts a worker when calling acceptWorker if there is no worker yet. Only the worker address is changed.', async () => {
@@ -261,6 +262,10 @@ describe("WorkFi", function () {
       const event = events[0];
       expect(event.args.nativePay).to.eq(nativePay);
       expect(event.args.stablePay).to.eq(stablePay);
+      const blockNumber = await hre.ethers.provider.getBlockNumber();
+      const block = await hre.ethers.provider.getBlock(blockNumber);
+      const bounty = await workFi.getBounty(bountyId);
+      expect(bounty.workerPaidAt).to.eq(block.timestamp);
    });
 
    // TODO: Case where initial stablePay > 0
@@ -290,7 +295,7 @@ describe("WorkFi", function () {
       const bounty = await workFi.getBounty(bountyId);
       const yieldPool = await workFi.calculateYieldPool(
          nativePay,
-         dailyYield,
+         dailyYield, 
          bounty.creationDate,
          deadline
       );
@@ -302,11 +307,11 @@ describe("WorkFi", function () {
       await (await workFi.acceptWorker(bountyId, workerAddresses[0])).wait();
       await (await workFi.markBountyAsCompleted(bountyId)).wait();
       await hre.ethers.provider.send('evm_increaseTime', [UnixTime.days(30 * 1.3)]); // investment opportunity closed
-      const investorNativeBalanceBefore = await stablecoin.balanceOf(investorAddress);
+      const investorNativeBalanceBefore = await nativeToken.balanceOf(investorAddress);
 
       await (await workfiWithInvestorSigner.acceptInvestorPayment(bountyId)).wait();
 
-      const investorBalanceAfter = await stablecoin.balanceOf(investorAddress);
+      const investorBalanceAfter = await nativeToken.balanceOf(investorAddress);
       const expectedInvestorPayment = nativePay.add(yieldPool);
       expect(investorBalanceAfter).to.eq(investorNativeBalanceBefore.add(expectedInvestorPayment));
       const filter = workFi.filters.InvestorPaymentAccepted(bountyId);

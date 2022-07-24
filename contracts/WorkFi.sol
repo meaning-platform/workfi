@@ -96,12 +96,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		uint128 dailyYieldPercentage,
 		uint256 workerDeadline
 	) external payable override nonReentrant returns (uint256) {
-		uint128 yieldPool = calculateYieldPool(
-			workerNativePay,
-			dailyYieldPercentage,
-			block.timestamp,
-			workerDeadline
-		);
+		uint128 yieldPool = calculateYieldPool(workerNativePay, dailyYieldPercentage, block.timestamp, workerDeadline);
 		uint128 amountOfNtOnBounty = workerNativePay + yieldPool;
 		if (nativeToken == ETH_ADDRESS) {
 			if (msg.value != amountOfNtOnBounty) {
@@ -131,7 +126,8 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 			workerDeadline: workerDeadline,
 			initialWorkerStablePay: workerStablePay,
 			initialWorkerNativePay: workerNativePay,
-			creationDate: block.timestamp
+			creationDate: block.timestamp,
+			workerPaidAt: 0
 		});
 
 		bounties.push(bounty);
@@ -153,7 +149,6 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		return bounties.length;
 	}
 
-	// TODO: Investor should not have all yield if investment opportunity closes earlier
 	function invest(uint256 bountyId, uint128 stableAmount) external override {
 		if (bountyId > bounties.length) {
 			revert BountyDoesNotExist();
@@ -172,22 +167,12 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		if (stableAmount > maxPossibleInvestment) {
 			revert MaxInvestmentExceeded(maxPossibleInvestment);
 		}
-		uint128 workerNativePayGoingToTheInvestor = stableAmount / bounty.exchangeRate;
+		uint128 workerNativePayGoingToTheInvestor = getNativePayFromStable(stableAmount, bounty.exchangeRate);
 		bounty.workerNativePay -= workerNativePayGoingToTheInvestor;
 		bounty.workerStablePay += stableAmount;
 
-		uint128 daysLeft = DeadlineUtils.getDaysBeforeInvestmentOpportunityDeadline(
-			bounty.creationDate,
-			block.timestamp,
-			bounty.workerDeadline,
-			INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT
-		);
 		investments[bountyId][msg.sender].push(
-			InvestmentMetadata({
-				stableAmount: stableAmount,
-				nativeTokenPayment: workerNativePayGoingToTheInvestor +
-					calculateTotalYield(stableAmount, bounty.dailyYieldPercentage, daysLeft)
-			})
+			InvestmentMetadata({stableAmount: stableAmount, creationDate: block.timestamp})
 		);
 
 		emit Invested(bountyId, msg.sender, stableAmount);
@@ -214,6 +199,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 
 		bounty.status = BountyStatus.WorkerHasBeenPaid;
 		bounty.setWorkerPayToZero();
+		bounty.workerPaidAt = block.timestamp;
 
 		emit WorkerPaymentAccepted(bountyId, workerNativePay, workerStablePay);
 
@@ -236,8 +222,22 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 
 		// TODO: Max amount of investments to prevent large loops ? Only blocks the investor itself though. Or maybe allow interacting with 1 investment at a time or batches of them. Or maybe allow interacting with 1 investment at a time or batches of them. Or maybe allow interacting with 1 investment at a time or batches of them
 		uint128 payment = 0;
+		uint256 investmentOpportunityEndDate = bounty.workerPaidAt > 0
+			? bounty.workerPaidAt
+			: DeadlineUtils.getInvestmentOpportunityDeadline(
+				bounty.creationDate,
+				bounty.workerDeadline,
+				INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT
+			);
 		for (uint256 i = 0; i < investments[bountyId][msg.sender].length; i++) {
-			payment += investments[bountyId][msg.sender][i].nativeTokenPayment;
+			uint128 stableAmount = investments[bountyId][msg.sender][i].stableAmount;
+			uint256 creationDate = investments[bountyId][msg.sender][i].creationDate;
+			uint128 workerNativePayGoingToTheInvestor = getNativePayFromStable(stableAmount, bounty.exchangeRate);
+			uint128 daysInvested = DeadlineUtils.getDaysBeforeDate(creationDate, investmentOpportunityEndDate);
+
+			payment +=
+				workerNativePayGoingToTheInvestor +
+				calculateTotalYield(workerNativePayGoingToTheInvestor, bounty.dailyYieldPercentage, daysInvested);
 		}
 		delete investments[bountyId][msg.sender];
 
@@ -361,7 +361,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		if (bountyId > bounties.length) {
 			revert BountyDoesNotExist();
 		}
-		return investments[bountyId][msg.sender][investmentId-1];
+		return investments[bountyId][msg.sender][investmentId - 1];
 	}
 
 	/////////////////
@@ -387,10 +387,17 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		uint128 dailyYieldPercentage,
 		uint128 daysBeforeInvestmentOpportunityCloses
 	) private pure returns (uint128) {
-		return uint128(MathUtils.calculatePercentage(initialValue, dailyYieldPercentage) * daysBeforeInvestmentOpportunityCloses);
+		return
+			uint128(
+				MathUtils.calculatePercentage(initialValue, dailyYieldPercentage) * daysBeforeInvestmentOpportunityCloses
+			);
 	}
 
-	function getStableNeeded(uint128 nativePay, uint128 exchangeRate) private pure returns(uint128) {
+	function getStableNeeded(uint128 nativePay, uint128 exchangeRate) private pure returns (uint128) {
 		return nativePay * exchangeRate;
+	}
+
+	function getNativePayFromStable(uint128 stableAmount, uint128 exchangeRate) private pure returns (uint128) {
+		return stableAmount / exchangeRate;
 	}
 }

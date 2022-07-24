@@ -24,6 +24,7 @@ struct BountyMetadata {
 	uint128 initialWorkerStablePay;
 	uint128 initialWorkerNativePay;
 	uint256 creationDate;
+	uint256 workerPaidAt; // 0 if not paid
 }
 
 library BountyUtils {

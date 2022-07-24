@@ -42,6 +42,7 @@ export type BountyMetadataStruct = {
   initialWorkerStablePay: PromiseOrValue<BigNumberish>;
   initialWorkerNativePay: PromiseOrValue<BigNumberish>;
   creationDate: PromiseOrValue<BigNumberish>;
+  workerPaidAt: PromiseOrValue<BigNumberish>;
 };
 
 export type BountyMetadataStructOutput = [
@@ -54,6 +55,7 @@ export type BountyMetadataStructOutput = [
   string,
   string,
   number,
+  BigNumber,
   BigNumber,
   BigNumber,
   BigNumber,
@@ -72,17 +74,18 @@ export type BountyMetadataStructOutput = [
   initialWorkerStablePay: BigNumber;
   initialWorkerNativePay: BigNumber;
   creationDate: BigNumber;
+  workerPaidAt: BigNumber;
 };
 
 export declare namespace IWorkFi {
   export type InvestmentMetadataStruct = {
     stableAmount: PromiseOrValue<BigNumberish>;
-    nativeTokenPayment: PromiseOrValue<BigNumberish>;
+    creationDate: PromiseOrValue<BigNumberish>;
   };
 
   export type InvestmentMetadataStructOutput = [BigNumber, BigNumber] & {
     stableAmount: BigNumber;
-    nativeTokenPayment: BigNumber;
+    creationDate: BigNumber;
   };
 }
 

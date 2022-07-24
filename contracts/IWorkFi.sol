@@ -8,7 +8,7 @@ interface IWorkFi {
 
 	struct InvestmentMetadata {
 		uint128 stableAmount;
-		uint128 nativeTokenPayment;
+		uint256 creationDate;
 	}
 
 	/////////////////

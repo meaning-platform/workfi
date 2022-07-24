@@ -204,6 +204,11 @@
               "internalType": "uint256",
               "name": "creationDate",
               "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "workerPaidAt",
+              "type": "uint256"
             }
           ],
           "internalType": "struct BountyMetadata",
@@ -237,9 +242,9 @@
               "type": "uint128"
             },
             {
-              "internalType": "uint128",
-              "name": "nativeTokenPayment",
-              "type": "uint128"
+              "internalType": "uint256",
+              "name": "creationDate",
+              "type": "uint256"
             }
           ],
           "internalType": "struct IWorkFi.InvestmentMetadata",
