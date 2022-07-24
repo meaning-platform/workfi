@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { UnixTime } from "../scripts/time";
 import { deployWithoutArguments } from "../scripts/utils";
+import { DeadlineUtils, MathUtils } from "../typechain-types";
 
 describe("DeadlineUtils", function () {
 
@@ -48,7 +49,7 @@ describe("DeadlineUtils", function () {
     });
 });
 
-async function deployDeadlineUtils() {
-    const mathUtils = await deployWithoutArguments('MathUtils');
-    return deployWithoutArguments('DeadlineUtils', { MathUtils: mathUtils.address });
+async function deployDeadlineUtils(): Promise<DeadlineUtils> {
+    const mathUtils = await deployWithoutArguments<MathUtils>('MathUtils');
+    return deployWithoutArguments<DeadlineUtils>('DeadlineUtils', { MathUtils: mathUtils.address });
 }
