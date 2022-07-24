@@ -25,42 +25,12 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 	address constant ETH_ADDRESS = address(0);
 	uint256 public constant INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT = 30_00; // 30%
 
-	event BountyCreated(uint256 indexed bountyId, address indexed recruiter);
-	event WorkerAccepted(uint256 indexed bountyId, address indexed worker);
-	event Invested(uint256 indexed bountyId, address indexed investor, uint128 amount);
-	event StablecoinAddedToWhitelist(address indexed stablecoin);
-	event StablecoinRemovedFromWhitelist(address indexed stablecoin);
-	event InvestmentsWithdrawn(uint256 indexed bountyId);
-	event BountyCancelled(uint256 indexed bountyId);
-	event BountyCompleted(uint256 indexed bountyId);
-	event InvestorPaymentAccepted(uint256 indexed bountyId, uint128 payment);
-	event WorkerPaymentAccepted(uint256 indexed bountyId, uint128 nativePay, uint128 stablePay);
-
-	error BountyDoesNotExist();
-	error WorkerCannotBeZero();
-	error NotRecruiter();
-	error WorkerCannotInvest();
-	error RecruiterCannotInvest();
-	error WorkerHasBeenPaid();
-	error NotTheWorker();
-	error NotAnInvestor();
-	error AWorkerWasAlreadyAccepted();
-	error ThisAmountOfEthIsRequired(uint128 required);
-	error ValueShouldBeZeroIfNotPayingWithEth();
-	error NotAWhitelistedStablecoin();
-	error MaxInvestmentExceeded(uint128 maxPossibleAmount);
-	error InvestmentOpportunityIsStillOpen();
-	error InvestmentOpportunityIsClosed();
-	error WorkerDeadlineExpired();
-	error BountyIsNotOngoing();
-	error BountyIsNotCancelled();
-
-	function addStablecoinToWhitelist(address stablecoin) external onlyOwner {
+	function addStablecoinToWhitelist(address stablecoin) external override onlyOwner {
 		whitelistedStablecoins[stablecoin] = true;
 		emit StablecoinAddedToWhitelist(stablecoin);
 	}
 
-	function removeStablecoinFromWhitelist(address stablecoin) external onlyOwner {
+	function removeStablecoinFromWhitelist(address stablecoin) external override onlyOwner {
 		whitelistedStablecoins[stablecoin] = false;
 		emit StablecoinRemovedFromWhitelist(stablecoin);
 	}

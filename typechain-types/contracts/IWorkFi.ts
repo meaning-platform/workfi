@@ -14,7 +14,11 @@ import type {
   Signer,
   utils,
 } from "ethers";
-import type { FunctionFragment, Result } from "@ethersproject/abi";
+import type {
+  FunctionFragment,
+  Result,
+  EventFragment,
+} from "@ethersproject/abi";
 import type { Listener, Provider } from "@ethersproject/providers";
 import type {
   TypedEventFilter,
@@ -90,6 +94,7 @@ export interface IWorkFiInterface extends utils.Interface {
     "acceptInvestorPayment(uint256)": FunctionFragment;
     "acceptWorker(uint256,address)": FunctionFragment;
     "acceptWorkerPayment(uint256)": FunctionFragment;
+    "addStablecoinToWhitelist(address)": FunctionFragment;
     "calculateTotalYield(uint128,uint128,uint128)": FunctionFragment;
     "calculateYieldPool(uint128,uint128,uint256,uint256)": FunctionFragment;
     "cancelBounty(uint256)": FunctionFragment;
@@ -99,6 +104,7 @@ export interface IWorkFiInterface extends utils.Interface {
     "getInvestment(uint256,uint256)": FunctionFragment;
     "invest(uint256,uint128)": FunctionFragment;
     "markBountyAsCompleted(uint256)": FunctionFragment;
+    "removeStablecoinFromWhitelist(address)": FunctionFragment;
     "withdrawInvestments(uint256)": FunctionFragment;
   };
 
@@ -107,6 +113,7 @@ export interface IWorkFiInterface extends utils.Interface {
       | "acceptInvestorPayment"
       | "acceptWorker"
       | "acceptWorkerPayment"
+      | "addStablecoinToWhitelist"
       | "calculateTotalYield"
       | "calculateYieldPool"
       | "cancelBounty"
@@ -116,6 +123,7 @@ export interface IWorkFiInterface extends utils.Interface {
       | "getInvestment"
       | "invest"
       | "markBountyAsCompleted"
+      | "removeStablecoinFromWhitelist"
       | "withdrawInvestments"
   ): FunctionFragment;
 
@@ -130,6 +138,10 @@ export interface IWorkFiInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "acceptWorkerPayment",
     values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "addStablecoinToWhitelist",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "calculateTotalYield",
@@ -185,6 +197,10 @@ export interface IWorkFiInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "removeStablecoinFromWhitelist",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "withdrawInvestments",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
@@ -199,6 +215,10 @@ export interface IWorkFiInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "acceptWorkerPayment",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "addStablecoinToWhitelist",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -232,12 +252,152 @@ export interface IWorkFiInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "removeStablecoinFromWhitelist",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "withdrawInvestments",
     data: BytesLike
   ): Result;
 
-  events: {};
+  events: {
+    "BountyCancelled(uint256)": EventFragment;
+    "BountyCompleted(uint256)": EventFragment;
+    "BountyCreated(uint256,address)": EventFragment;
+    "Invested(uint256,address,uint128)": EventFragment;
+    "InvestmentsWithdrawn(uint256)": EventFragment;
+    "InvestorPaymentAccepted(uint256,uint128)": EventFragment;
+    "StablecoinAddedToWhitelist(address)": EventFragment;
+    "StablecoinRemovedFromWhitelist(address)": EventFragment;
+    "WorkerAccepted(uint256,address)": EventFragment;
+    "WorkerPaymentAccepted(uint256,uint128,uint128)": EventFragment;
+  };
+
+  getEvent(nameOrSignatureOrTopic: "BountyCancelled"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BountyCompleted"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BountyCreated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Invested"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "InvestmentsWithdrawn"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "InvestorPaymentAccepted"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "StablecoinAddedToWhitelist"): EventFragment;
+  getEvent(
+    nameOrSignatureOrTopic: "StablecoinRemovedFromWhitelist"
+  ): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "WorkerAccepted"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "WorkerPaymentAccepted"): EventFragment;
 }
+
+export interface BountyCancelledEventObject {
+  bountyId: BigNumber;
+}
+export type BountyCancelledEvent = TypedEvent<
+  [BigNumber],
+  BountyCancelledEventObject
+>;
+
+export type BountyCancelledEventFilter = TypedEventFilter<BountyCancelledEvent>;
+
+export interface BountyCompletedEventObject {
+  bountyId: BigNumber;
+}
+export type BountyCompletedEvent = TypedEvent<
+  [BigNumber],
+  BountyCompletedEventObject
+>;
+
+export type BountyCompletedEventFilter = TypedEventFilter<BountyCompletedEvent>;
+
+export interface BountyCreatedEventObject {
+  bountyId: BigNumber;
+  recruiter: string;
+}
+export type BountyCreatedEvent = TypedEvent<
+  [BigNumber, string],
+  BountyCreatedEventObject
+>;
+
+export type BountyCreatedEventFilter = TypedEventFilter<BountyCreatedEvent>;
+
+export interface InvestedEventObject {
+  bountyId: BigNumber;
+  investor: string;
+  amount: BigNumber;
+}
+export type InvestedEvent = TypedEvent<
+  [BigNumber, string, BigNumber],
+  InvestedEventObject
+>;
+
+export type InvestedEventFilter = TypedEventFilter<InvestedEvent>;
+
+export interface InvestmentsWithdrawnEventObject {
+  bountyId: BigNumber;
+}
+export type InvestmentsWithdrawnEvent = TypedEvent<
+  [BigNumber],
+  InvestmentsWithdrawnEventObject
+>;
+
+export type InvestmentsWithdrawnEventFilter =
+  TypedEventFilter<InvestmentsWithdrawnEvent>;
+
+export interface InvestorPaymentAcceptedEventObject {
+  bountyId: BigNumber;
+  payment: BigNumber;
+}
+export type InvestorPaymentAcceptedEvent = TypedEvent<
+  [BigNumber, BigNumber],
+  InvestorPaymentAcceptedEventObject
+>;
+
+export type InvestorPaymentAcceptedEventFilter =
+  TypedEventFilter<InvestorPaymentAcceptedEvent>;
+
+export interface StablecoinAddedToWhitelistEventObject {
+  stablecoin: string;
+}
+export type StablecoinAddedToWhitelistEvent = TypedEvent<
+  [string],
+  StablecoinAddedToWhitelistEventObject
+>;
+
+export type StablecoinAddedToWhitelistEventFilter =
+  TypedEventFilter<StablecoinAddedToWhitelistEvent>;
+
+export interface StablecoinRemovedFromWhitelistEventObject {
+  stablecoin: string;
+}
+export type StablecoinRemovedFromWhitelistEvent = TypedEvent<
+  [string],
+  StablecoinRemovedFromWhitelistEventObject
+>;
+
+export type StablecoinRemovedFromWhitelistEventFilter =
+  TypedEventFilter<StablecoinRemovedFromWhitelistEvent>;
+
+export interface WorkerAcceptedEventObject {
+  bountyId: BigNumber;
+  worker: string;
+}
+export type WorkerAcceptedEvent = TypedEvent<
+  [BigNumber, string],
+  WorkerAcceptedEventObject
+>;
+
+export type WorkerAcceptedEventFilter = TypedEventFilter<WorkerAcceptedEvent>;
+
+export interface WorkerPaymentAcceptedEventObject {
+  bountyId: BigNumber;
+  nativePay: BigNumber;
+  stablePay: BigNumber;
+}
+export type WorkerPaymentAcceptedEvent = TypedEvent<
+  [BigNumber, BigNumber, BigNumber],
+  WorkerPaymentAcceptedEventObject
+>;
+
+export type WorkerPaymentAcceptedEventFilter =
+  TypedEventFilter<WorkerPaymentAcceptedEvent>;
 
 export interface IWorkFi extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -282,6 +442,11 @@ export interface IWorkFi extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    addStablecoinToWhitelist(
+      stablecoin: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     calculateTotalYield(
       initialValue: PromiseOrValue<BigNumberish>,
       dailyYieldPercentage: PromiseOrValue<BigNumberish>,
@@ -309,7 +474,7 @@ export interface IWorkFi extends BaseContract {
       nativeToken: PromiseOrValue<string>,
       stablecoin: PromiseOrValue<string>,
       dailyYieldPercentage: PromiseOrValue<BigNumberish>,
-      deadline: PromiseOrValue<BigNumberish>,
+      workerDeadline: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -340,6 +505,11 @@ export interface IWorkFi extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    removeStablecoinFromWhitelist(
+      stablecoin: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     withdrawInvestments(
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -359,6 +529,11 @@ export interface IWorkFi extends BaseContract {
 
   acceptWorkerPayment(
     bountyId: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  addStablecoinToWhitelist(
+    stablecoin: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -389,7 +564,7 @@ export interface IWorkFi extends BaseContract {
     nativeToken: PromiseOrValue<string>,
     stablecoin: PromiseOrValue<string>,
     dailyYieldPercentage: PromiseOrValue<BigNumberish>,
-    deadline: PromiseOrValue<BigNumberish>,
+    workerDeadline: PromiseOrValue<BigNumberish>,
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -420,6 +595,11 @@ export interface IWorkFi extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  removeStablecoinFromWhitelist(
+    stablecoin: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   withdrawInvestments(
     bountyId: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -439,6 +619,11 @@ export interface IWorkFi extends BaseContract {
 
     acceptWorkerPayment(
       bountyId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    addStablecoinToWhitelist(
+      stablecoin: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -469,7 +654,7 @@ export interface IWorkFi extends BaseContract {
       nativeToken: PromiseOrValue<string>,
       stablecoin: PromiseOrValue<string>,
       dailyYieldPercentage: PromiseOrValue<BigNumberish>,
-      deadline: PromiseOrValue<BigNumberish>,
+      workerDeadline: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -500,13 +685,102 @@ export interface IWorkFi extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    removeStablecoinFromWhitelist(
+      stablecoin: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     withdrawInvestments(
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
   };
 
-  filters: {};
+  filters: {
+    "BountyCancelled(uint256)"(
+      bountyId?: PromiseOrValue<BigNumberish> | null
+    ): BountyCancelledEventFilter;
+    BountyCancelled(
+      bountyId?: PromiseOrValue<BigNumberish> | null
+    ): BountyCancelledEventFilter;
+
+    "BountyCompleted(uint256)"(
+      bountyId?: PromiseOrValue<BigNumberish> | null
+    ): BountyCompletedEventFilter;
+    BountyCompleted(
+      bountyId?: PromiseOrValue<BigNumberish> | null
+    ): BountyCompletedEventFilter;
+
+    "BountyCreated(uint256,address)"(
+      bountyId?: PromiseOrValue<BigNumberish> | null,
+      recruiter?: PromiseOrValue<string> | null
+    ): BountyCreatedEventFilter;
+    BountyCreated(
+      bountyId?: PromiseOrValue<BigNumberish> | null,
+      recruiter?: PromiseOrValue<string> | null
+    ): BountyCreatedEventFilter;
+
+    "Invested(uint256,address,uint128)"(
+      bountyId?: PromiseOrValue<BigNumberish> | null,
+      investor?: PromiseOrValue<string> | null,
+      amount?: null
+    ): InvestedEventFilter;
+    Invested(
+      bountyId?: PromiseOrValue<BigNumberish> | null,
+      investor?: PromiseOrValue<string> | null,
+      amount?: null
+    ): InvestedEventFilter;
+
+    "InvestmentsWithdrawn(uint256)"(
+      bountyId?: PromiseOrValue<BigNumberish> | null
+    ): InvestmentsWithdrawnEventFilter;
+    InvestmentsWithdrawn(
+      bountyId?: PromiseOrValue<BigNumberish> | null
+    ): InvestmentsWithdrawnEventFilter;
+
+    "InvestorPaymentAccepted(uint256,uint128)"(
+      bountyId?: PromiseOrValue<BigNumberish> | null,
+      payment?: null
+    ): InvestorPaymentAcceptedEventFilter;
+    InvestorPaymentAccepted(
+      bountyId?: PromiseOrValue<BigNumberish> | null,
+      payment?: null
+    ): InvestorPaymentAcceptedEventFilter;
+
+    "StablecoinAddedToWhitelist(address)"(
+      stablecoin?: PromiseOrValue<string> | null
+    ): StablecoinAddedToWhitelistEventFilter;
+    StablecoinAddedToWhitelist(
+      stablecoin?: PromiseOrValue<string> | null
+    ): StablecoinAddedToWhitelistEventFilter;
+
+    "StablecoinRemovedFromWhitelist(address)"(
+      stablecoin?: PromiseOrValue<string> | null
+    ): StablecoinRemovedFromWhitelistEventFilter;
+    StablecoinRemovedFromWhitelist(
+      stablecoin?: PromiseOrValue<string> | null
+    ): StablecoinRemovedFromWhitelistEventFilter;
+
+    "WorkerAccepted(uint256,address)"(
+      bountyId?: PromiseOrValue<BigNumberish> | null,
+      worker?: PromiseOrValue<string> | null
+    ): WorkerAcceptedEventFilter;
+    WorkerAccepted(
+      bountyId?: PromiseOrValue<BigNumberish> | null,
+      worker?: PromiseOrValue<string> | null
+    ): WorkerAcceptedEventFilter;
+
+    "WorkerPaymentAccepted(uint256,uint128,uint128)"(
+      bountyId?: PromiseOrValue<BigNumberish> | null,
+      nativePay?: null,
+      stablePay?: null
+    ): WorkerPaymentAcceptedEventFilter;
+    WorkerPaymentAccepted(
+      bountyId?: PromiseOrValue<BigNumberish> | null,
+      nativePay?: null,
+      stablePay?: null
+    ): WorkerPaymentAcceptedEventFilter;
+  };
 
   estimateGas: {
     acceptInvestorPayment(
@@ -522,6 +796,11 @@ export interface IWorkFi extends BaseContract {
 
     acceptWorkerPayment(
       bountyId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    addStablecoinToWhitelist(
+      stablecoin: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -552,7 +831,7 @@ export interface IWorkFi extends BaseContract {
       nativeToken: PromiseOrValue<string>,
       stablecoin: PromiseOrValue<string>,
       dailyYieldPercentage: PromiseOrValue<BigNumberish>,
-      deadline: PromiseOrValue<BigNumberish>,
+      workerDeadline: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -580,6 +859,11 @@ export interface IWorkFi extends BaseContract {
 
     markBountyAsCompleted(
       bountyId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    removeStablecoinFromWhitelist(
+      stablecoin: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -606,6 +890,11 @@ export interface IWorkFi extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    addStablecoinToWhitelist(
+      stablecoin: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     calculateTotalYield(
       initialValue: PromiseOrValue<BigNumberish>,
       dailyYieldPercentage: PromiseOrValue<BigNumberish>,
@@ -633,7 +922,7 @@ export interface IWorkFi extends BaseContract {
       nativeToken: PromiseOrValue<string>,
       stablecoin: PromiseOrValue<string>,
       dailyYieldPercentage: PromiseOrValue<BigNumberish>,
-      deadline: PromiseOrValue<BigNumberish>,
+      workerDeadline: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -661,6 +950,11 @@ export interface IWorkFi extends BaseContract {
 
     markBountyAsCompleted(
       bountyId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    removeStablecoinFromWhitelist(
+      stablecoin: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

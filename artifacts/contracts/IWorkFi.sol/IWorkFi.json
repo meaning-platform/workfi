@@ -4,6 +4,280 @@
   "sourceName": "contracts/IWorkFi.sol",
   "abi": [
     {
+      "inputs": [],
+      "name": "AWorkerWasAlreadyAccepted",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "BountyDoesNotExist",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "BountyIsNotCancelled",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "BountyIsNotOngoing",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvestmentOpportunityIsClosed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvestmentOpportunityIsStillOpen",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint128",
+          "name": "maxPossibleAmount",
+          "type": "uint128"
+        }
+      ],
+      "name": "MaxInvestmentExceeded",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotAWhitelistedStablecoin",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotAnInvestor",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotRecruiter",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotTheWorker",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "RecruiterCannotInvest",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint128",
+          "name": "required",
+          "type": "uint128"
+        }
+      ],
+      "name": "ThisAmountOfEthIsRequired",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ValueShouldBeZeroIfNotPayingWithEth",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "WorkerCannotBeZero",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "WorkerCannotInvest",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "WorkerDeadlineExpired",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "WorkerHasBeenPaid",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "bountyId",
+          "type": "uint256"
+        }
+      ],
+      "name": "BountyCancelled",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "bountyId",
+          "type": "uint256"
+        }
+      ],
+      "name": "BountyCompleted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "bountyId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "recruiter",
+          "type": "address"
+        }
+      ],
+      "name": "BountyCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "bountyId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "investor",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint128",
+          "name": "amount",
+          "type": "uint128"
+        }
+      ],
+      "name": "Invested",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "bountyId",
+          "type": "uint256"
+        }
+      ],
+      "name": "InvestmentsWithdrawn",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "bountyId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint128",
+          "name": "payment",
+          "type": "uint128"
+        }
+      ],
+      "name": "InvestorPaymentAccepted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "stablecoin",
+          "type": "address"
+        }
+      ],
+      "name": "StablecoinAddedToWhitelist",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "stablecoin",
+          "type": "address"
+        }
+      ],
+      "name": "StablecoinRemovedFromWhitelist",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "bountyId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "worker",
+          "type": "address"
+        }
+      ],
+      "name": "WorkerAccepted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "bountyId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint128",
+          "name": "nativePay",
+          "type": "uint128"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint128",
+          "name": "stablePay",
+          "type": "uint128"
+        }
+      ],
+      "name": "WorkerPaymentAccepted",
+      "type": "event"
+    },
+    {
       "inputs": [
         {
           "internalType": "uint256",
@@ -43,6 +317,19 @@
         }
       ],
       "name": "acceptWorkerPayment",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "stablecoin",
+          "type": "address"
+        }
+      ],
+      "name": "addStablecoinToWhitelist",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -157,7 +444,7 @@
         },
         {
           "internalType": "uint256",
-          "name": "deadline",
+          "name": "workerDeadline",
           "type": "uint256"
         }
       ],
@@ -345,6 +632,19 @@
         }
       ],
       "name": "markBountyAsCompleted",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "stablecoin",
+          "type": "address"
+        }
+      ],
+      "name": "removeStablecoinFromWhitelist",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
