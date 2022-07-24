@@ -1,17 +1,24 @@
-import { writeFileSync } from 'fs';
-import { deployWorkFi } from './utils';
+import { deployWorkFiWithDependencies } from './utils';
+import * as hre from 'hardhat';
+import { writeAddressRegistryFile } from './addressRegistry/file';
+import { ADDRESS_REGISTRY } from './addressRegistry/addressRegistry';
+import { NetworkAddressRegistry } from './addressRegistry/types';
 
 async function main() {
-	const workFi = await deployWorkFi();
+	const result = await deployWorkFiWithDependencies();
 
-	console.log('Workfi deployed to:', workFi.address);
-	writeFileSync(
-		'./config.js',
-		`
-		export const contractAddress = "${workFi.address}"
-		export const ownerAddress = "${await workFi.signer.getAddress()}"
-`
-	);
+	const networkName = hre.ethers.provider.network.name;
+	const networkAddressRegistry: NetworkAddressRegistry = {
+		mathUtils: result.dependencies.mathUtils.address,
+		deadlineUtils: result.dependencies.deadlineUtils.address,
+		bountyUtils: result.dependencies.bountyUtils.address,
+		workFi: result.workFi.address
+	};
+	ADDRESS_REGISTRY.networks[networkName] = networkAddressRegistry;
+
+	writeAddressRegistryFile(ADDRESS_REGISTRY);
+
+	console.log(`Deployed the following contracts on ${networkName}:\n${JSON.stringify(networkAddressRegistry)}`);
 }
 
 main()

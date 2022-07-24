@@ -1,9 +1,9 @@
 import { expect } from "chai";
-import { BigNumber, BigNumberish, Contract, Signer } from "ethers";
+import { BigNumber, BigNumberish } from "ethers";
 import * as hre from "hardhat";
 import { UnixTime } from "../scripts/time";
 import { deployWorkFi } from "../scripts/utils";
-import { ERC20, MockERC20, WorkFi } from "../typechain-types";
+import { ERC20 } from "../typechain-types";
 
 describe("WorkFi", function () {
    const stablePay = BigNumber.from(0);
@@ -203,7 +203,7 @@ describe("WorkFi", function () {
    });
 
    it('calculates the yield pool correctly', async () => {
-      const workFi = await deployWorkFi();
+      const { workFi } = await deployWorkFi();
       const dailyYield = 100_00; // 100%
       const bountyCreationDate = UnixTime.now();
       const workerDeadlineDuration = UnixTime.days(30);
@@ -331,7 +331,7 @@ async function prepare() {
    const stablecoin = await MockErc20.deploy('StableCoin', 'SC');
    await stablecoin.deployed();
 
-   const workFi = await deployWorkFi();
+   const { workFi } = await deployWorkFi();
    await approveForManyTokens([nativeToken, stablecoin], workFi.address, hre.ethers.utils.parseEther('100'));
    await (await workFi.addStablecoinToWhitelist(stablecoin.address)).wait();
    const deadline = await createDeadline(UnixTime.days(30));

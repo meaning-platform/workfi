@@ -1,8 +1,5 @@
 import { expect } from "chai";
-import { BigNumber, BigNumberish, Contract, Signer } from "ethers";
 import * as hre from "hardhat";
-import { deployWorkFi } from "../scripts/utils";
-import { ERC20, MockERC20, WorkFi } from "../typechain-types";
 
 describe("MathUtils", function () {
    

@@ -1,9 +1,6 @@
 import { expect } from "chai";
-import { BigNumber, BigNumberish, Contract, Signer } from "ethers";
-import * as hre from "hardhat";
 import { UnixTime } from "../scripts/time";
-import { deployWithoutArguments, deployWorkFi } from "../scripts/utils";
-import { ERC20, MockERC20, WorkFi } from "../typechain-types";
+import { deployWithoutArguments } from "../scripts/utils";
 
 describe("DeadlineUtils", function () {
 

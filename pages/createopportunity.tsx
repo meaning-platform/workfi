@@ -5,10 +5,12 @@ import type { LoanOpportunity } from './api/data/LoanOpportunity';
 import { defaultBounty } from './api/data/mockData';
 import { useEffect, useState } from 'react';
 import { Approve } from '../components/Approve';
-import WorkFi from '../artifacts/contracts/WorkFi.sol/WorkFi.json';
-import { contractAddress } from '../config';
+import WorkFiArtifact from '../artifacts/contracts/WorkFi.sol/WorkFi.json';
 import { Web3Context } from '../context/web3Context';
 import { Web3ContextType } from '../types';
+import { ADDRESS_REGISTRY } from '../scripts/addressRegistry/addressRegistry';
+import { WorkFi } from '../typechain-types';
+import { getWhitelistedStablecoins } from '../utils/workFiUtils';
 
 
 
@@ -29,7 +31,14 @@ const CreateOpportunity: NextPage = () => {
 		stableRatio: 20,
 	} as LoanOpportunity);
 	const Web3 = React.useContext(Web3Context) as Web3ContextType;
-	const opportunityContract  = new ethers.Contract( contractAddress, WorkFi.abi, Web3.Signer);
+	const networkName = Web3.Provider?.network?.name; // TODO zoz: double check
+	// TODO zoz: double check
+	if (!networkName) {
+		throw new Error('No Network name ??');
+	}
+	const opportunityContractAddress = ADDRESS_REGISTRY.networks[networkName].workFi;
+	// TODO zoz: double check
+	const opportunityContract = new ethers.Contract(opportunityContractAddress, WorkFiArtifact.abi, Web3.Signer) as WorkFi;
 	function setRatio(ratio: number) {
 		if (ratio > 0) {
 			setOpportunity({
@@ -44,24 +53,37 @@ const CreateOpportunity: NextPage = () => {
 	function handlePostOpportunityEvent() {
 		setOpenDialog(true);
 	}
-	
-	const [callSmartContract, setCallSmartContract] = useState<() => void>(() => {});
+
+	const [callSmartContract, setCallSmartContract] = useState<() => void>(() => { });
 	useEffect(() => {
 		setCallSmartContract(() => {
 			return async () => {
-				const stablePay = opportunity.stableAmount;
-				const nativePay = opportunity.erc20Amount;
+				const whitelist = Array.from(await getWhitelistedStablecoins(opportunityContract));
+				// TODO zoz: here I pick the first whitelisted one, but we want to allow users to choose from a list in the future (this is already supported on the contract)
+				const stablecoin = whitelist[0];
+				const workerStablePay = opportunity.stableAmount;
+				const workerNativePay = opportunity.erc20Amount;
 				const exchangeRate = opportunity.erc20Price;
 				const nativeToken = opportunity.erc20Address;
-				let deadline = new Date();
-				deadline.setDate(deadline.getDate());
-				deadline = new Date(deadline.getTime() + 40 * 24 * 60 * 60 * 1000 * 1.15); // 40 days
-				let trx = await opportunityContract.createBounty(stablePay, nativePay, exchangeRate, nativeToken, Math.round(deadline.getTime() / 1000))
+				let workerDeadlineDate = new Date();
+				workerDeadlineDate.setDate(workerDeadlineDate.getDate());
+				workerDeadlineDate = new Date(workerDeadlineDate.getTime() + 40 * 24 * 60 * 60 * 1000 * 1.15); // 40 days
+				// TODO zoz: double check. This is the APR/365 but I hardcoded it
+				const dailyYieldPercentage = 10; // 0,1% in integer basis point
+				let trx = await opportunityContract.createBounty(
+					workerStablePay,
+					workerNativePay,
+					exchangeRate,
+					nativeToken,
+					stablecoin,
+					dailyYieldPercentage,
+					Math.round(workerDeadlineDate.getTime() / 1000),
+				)
 				let receipt = await trx.wait();
-                console.log(receipt);
+				console.log(receipt);
 			};
 		});
-	}, [opportunity]); 
+	}, [opportunity]);
 
 	return (
 		<div className="min-h-screen">

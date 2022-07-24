@@ -13,5 +13,3 @@ and deploy a smartcontract to it:
 ```
 npx hardhat run scripts/deploy.js --network localhost
 ```
-
-Page3 then should render a greet from smartcontract
