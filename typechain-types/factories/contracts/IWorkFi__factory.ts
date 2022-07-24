@@ -54,6 +54,69 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "uint128",
+        name: "initialValue",
+        type: "uint128",
+      },
+      {
+        internalType: "uint128",
+        name: "dailyYieldPercentage",
+        type: "uint128",
+      },
+      {
+        internalType: "uint128",
+        name: "daysBeforeInvestmentOpportunityCloses",
+        type: "uint128",
+      },
+    ],
+    name: "calculateTotalYield",
+    outputs: [
+      {
+        internalType: "uint128",
+        name: "",
+        type: "uint128",
+      },
+    ],
+    stateMutability: "pure",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint128",
+        name: "workerNativePay",
+        type: "uint128",
+      },
+      {
+        internalType: "uint128",
+        name: "dailyYieldPercentage",
+        type: "uint128",
+      },
+      {
+        internalType: "uint256",
+        name: "bountyCreationDate",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "workerDeadline",
+        type: "uint256",
+      },
+    ],
+    name: "calculateYieldPool",
+    outputs: [
+      {
+        internalType: "uint128",
+        name: "",
+        type: "uint128",
+      },
+    ],
+    stateMutability: "pure",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "uint256",
         name: "bountyId",
         type: "uint256",

@@ -39,4 +39,5 @@ library BountyUtils {
 			(bounty.status == BountyStatus.Completed &&
 				block.timestamp >= DeadlineUtils.getInvestmentOpportunityDeadline(bounty.creationDate, bounty.workerDeadline, investmentOpportunityPercentage));
 	}
+
 }

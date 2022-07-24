@@ -96,6 +96,7 @@ export interface WorkFiInterface extends utils.Interface {
     "acceptWorker(uint256,address)": FunctionFragment;
     "acceptWorkerPayment(uint256)": FunctionFragment;
     "addStablecoinToWhitelist(address)": FunctionFragment;
+    "calculateTotalYield(uint128,uint128,uint128)": FunctionFragment;
     "calculateYieldPool(uint128,uint128,uint256,uint256)": FunctionFragment;
     "cancelBounty(uint256)": FunctionFragment;
     "createBounty(uint128,uint128,uint96,address,address,uint128,uint256)": FunctionFragment;
@@ -118,6 +119,7 @@ export interface WorkFiInterface extends utils.Interface {
       | "acceptWorker"
       | "acceptWorkerPayment"
       | "addStablecoinToWhitelist"
+      | "calculateTotalYield"
       | "calculateYieldPool"
       | "cancelBounty"
       | "createBounty"
@@ -152,6 +154,14 @@ export interface WorkFiInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "addStablecoinToWhitelist",
     values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "calculateTotalYield",
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "calculateYieldPool",
@@ -234,6 +244,10 @@ export interface WorkFiInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "addStablecoinToWhitelist",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "calculateTotalYield",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -485,6 +499,13 @@ export interface WorkFi extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    calculateTotalYield(
+      initialValue: PromiseOrValue<BigNumberish>,
+      dailyYieldPercentage: PromiseOrValue<BigNumberish>,
+      daysBeforeInvestmentOpportunityCloses: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     calculateYieldPool(
       workerNativePay: PromiseOrValue<BigNumberish>,
       dailyYieldPercentage: PromiseOrValue<BigNumberish>,
@@ -583,6 +604,13 @@ export interface WorkFi extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  calculateTotalYield(
+    initialValue: PromiseOrValue<BigNumberish>,
+    dailyYieldPercentage: PromiseOrValue<BigNumberish>,
+    daysBeforeInvestmentOpportunityCloses: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   calculateYieldPool(
     workerNativePay: PromiseOrValue<BigNumberish>,
     dailyYieldPercentage: PromiseOrValue<BigNumberish>,
@@ -680,6 +708,13 @@ export interface WorkFi extends BaseContract {
       stablecoin: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    calculateTotalYield(
+      initialValue: PromiseOrValue<BigNumberish>,
+      dailyYieldPercentage: PromiseOrValue<BigNumberish>,
+      daysBeforeInvestmentOpportunityCloses: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     calculateYieldPool(
       workerNativePay: PromiseOrValue<BigNumberish>,
@@ -873,6 +908,13 @@ export interface WorkFi extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    calculateTotalYield(
+      initialValue: PromiseOrValue<BigNumberish>,
+      dailyYieldPercentage: PromiseOrValue<BigNumberish>,
+      daysBeforeInvestmentOpportunityCloses: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     calculateYieldPool(
       workerNativePay: PromiseOrValue<BigNumberish>,
       dailyYieldPercentage: PromiseOrValue<BigNumberish>,
@@ -970,6 +1012,13 @@ export interface WorkFi extends BaseContract {
     addStablecoinToWhitelist(
       stablecoin: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    calculateTotalYield(
+      initialValue: PromiseOrValue<BigNumberish>,
+      dailyYieldPercentage: PromiseOrValue<BigNumberish>,
+      daysBeforeInvestmentOpportunityCloses: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     calculateYieldPool(

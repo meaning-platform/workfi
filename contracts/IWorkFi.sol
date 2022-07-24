@@ -5,7 +5,6 @@ import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
 import './Bounty.sol';
 
 interface IWorkFi {
-
 	struct InvestmentMetadata {
 		uint128 stableAmount;
 		uint256 creationDate;
@@ -45,8 +44,8 @@ interface IWorkFi {
 	// Cancel the bounty, returning to everyone the tokens they invested
 	function cancelBounty(uint256 bountyId) external;
 
-    // Withdraw investments from a cancelled bounty
-    function withdrawInvestments(uint256 bountyId) external;
+	// Withdraw investments from a cancelled bounty
+	function withdrawInvestments(uint256 bountyId) external;
 
 	/////////////////
 	// VIEW FUNCTIONS
@@ -59,4 +58,17 @@ interface IWorkFi {
 
 	/// Gets an investment the sender has put in the bounty
 	function getInvestment(uint256 bountyId, uint256 investmentId) external view returns (InvestmentMetadata memory);
+
+	function calculateYieldPool(
+		uint128 workerNativePay,
+		uint128 dailyYieldPercentage,
+		uint256 bountyCreationDate,
+		uint256 workerDeadline
+	) external pure returns (uint128);
+
+	function calculateTotalYield(
+		uint128 initialValue,
+		uint128 dailyYieldPercentage,
+		uint128 daysBeforeInvestmentOpportunityCloses
+	) external pure returns (uint128);
 }

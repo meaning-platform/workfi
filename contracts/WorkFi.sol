@@ -96,7 +96,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		uint128 dailyYieldPercentage,
 		uint256 workerDeadline
 	) external payable override nonReentrant returns (uint256) {
-		uint128 yieldPool = calculateYieldPool(workerNativePay, dailyYieldPercentage, block.timestamp, workerDeadline);
+		uint128 yieldPool = _calculateYieldPool(workerNativePay, dailyYieldPercentage, block.timestamp, workerDeadline);
 		uint128 amountOfNtOnBounty = workerNativePay + yieldPool;
 		if (nativeToken == ETH_ADDRESS) {
 			if (msg.value != amountOfNtOnBounty) {
@@ -237,7 +237,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 
 			payment +=
 				workerNativePayGoingToTheInvestor +
-				calculateTotalYield(workerNativePayGoingToTheInvestor, bounty.dailyYieldPercentage, daysInvested);
+				_calculateTotalYield(workerNativePayGoingToTheInvestor, bounty.dailyYieldPercentage, daysInvested);
 		}
 		delete investments[bountyId][msg.sender];
 
@@ -303,7 +303,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		bounty.status = BountyStatus.Cancelled;
 		bounty.setWorkerPayToZero();
 
-		uint128 yieldPool = calculateYieldPool(
+		uint128 yieldPool = _calculateYieldPool(
 			bounty.initialWorkerNativePay,
 			bounty.dailyYieldPercentage,
 			block.timestamp,
@@ -367,22 +367,40 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 	/////////////////
 	// PURE FUNCTIONS
 	/////////////////
+
 	function calculateYieldPool(
 		uint128 workerNativePay,
 		uint128 dailyYieldPercentage,
 		uint256 bountyCreationDate,
 		uint256 workerDeadline
-	) public pure returns (uint128) {
+	) external pure override returns (uint128) {
+		return _calculateYieldPool(workerNativePay, dailyYieldPercentage, bountyCreationDate, workerDeadline);
+	}
+
+	function _calculateYieldPool(
+		uint128 workerNativePay,
+		uint128 dailyYieldPercentage,
+		uint256 bountyCreationDate,
+		uint256 workerDeadline
+	) private pure returns (uint128) {
 		uint128 investmentOpportunityDays = DeadlineUtils.getDaysBeforeInvestmentOpportunityDeadline(
 			bountyCreationDate,
 			bountyCreationDate,
 			workerDeadline,
 			INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT
 		);
-		return calculateTotalYield(workerNativePay, dailyYieldPercentage, investmentOpportunityDays);
+		return _calculateTotalYield(workerNativePay, dailyYieldPercentage, investmentOpportunityDays);
 	}
 
 	function calculateTotalYield(
+		uint128 initialValue,
+		uint128 dailyYieldPercentage,
+		uint128 daysBeforeInvestmentOpportunityCloses
+	) external pure override returns (uint128) {
+		return _calculateTotalYield(initialValue, dailyYieldPercentage, daysBeforeInvestmentOpportunityCloses);
+	}
+
+	function _calculateTotalYield(
 		uint128 initialValue,
 		uint128 dailyYieldPercentage,
 		uint128 daysBeforeInvestmentOpportunityCloses

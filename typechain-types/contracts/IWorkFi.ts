@@ -90,6 +90,8 @@ export interface IWorkFiInterface extends utils.Interface {
     "acceptInvestorPayment(uint256)": FunctionFragment;
     "acceptWorker(uint256,address)": FunctionFragment;
     "acceptWorkerPayment(uint256)": FunctionFragment;
+    "calculateTotalYield(uint128,uint128,uint128)": FunctionFragment;
+    "calculateYieldPool(uint128,uint128,uint256,uint256)": FunctionFragment;
     "cancelBounty(uint256)": FunctionFragment;
     "createBounty(uint128,uint128,uint96,address,address,uint128,uint256)": FunctionFragment;
     "getAmountOfInvestments(uint256)": FunctionFragment;
@@ -105,6 +107,8 @@ export interface IWorkFiInterface extends utils.Interface {
       | "acceptInvestorPayment"
       | "acceptWorker"
       | "acceptWorkerPayment"
+      | "calculateTotalYield"
+      | "calculateYieldPool"
       | "cancelBounty"
       | "createBounty"
       | "getAmountOfInvestments"
@@ -126,6 +130,23 @@ export interface IWorkFiInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "acceptWorkerPayment",
     values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "calculateTotalYield",
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "calculateYieldPool",
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "cancelBounty",
@@ -178,6 +199,14 @@ export interface IWorkFiInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "acceptWorkerPayment",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "calculateTotalYield",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "calculateYieldPool",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -253,6 +282,21 @@ export interface IWorkFi extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    calculateTotalYield(
+      initialValue: PromiseOrValue<BigNumberish>,
+      dailyYieldPercentage: PromiseOrValue<BigNumberish>,
+      daysBeforeInvestmentOpportunityCloses: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    calculateYieldPool(
+      workerNativePay: PromiseOrValue<BigNumberish>,
+      dailyYieldPercentage: PromiseOrValue<BigNumberish>,
+      bountyCreationDate: PromiseOrValue<BigNumberish>,
+      workerDeadline: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     cancelBounty(
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -318,6 +362,21 @@ export interface IWorkFi extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  calculateTotalYield(
+    initialValue: PromiseOrValue<BigNumberish>,
+    dailyYieldPercentage: PromiseOrValue<BigNumberish>,
+    daysBeforeInvestmentOpportunityCloses: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  calculateYieldPool(
+    workerNativePay: PromiseOrValue<BigNumberish>,
+    dailyYieldPercentage: PromiseOrValue<BigNumberish>,
+    bountyCreationDate: PromiseOrValue<BigNumberish>,
+    workerDeadline: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   cancelBounty(
     bountyId: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -382,6 +441,21 @@ export interface IWorkFi extends BaseContract {
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    calculateTotalYield(
+      initialValue: PromiseOrValue<BigNumberish>,
+      dailyYieldPercentage: PromiseOrValue<BigNumberish>,
+      daysBeforeInvestmentOpportunityCloses: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    calculateYieldPool(
+      workerNativePay: PromiseOrValue<BigNumberish>,
+      dailyYieldPercentage: PromiseOrValue<BigNumberish>,
+      bountyCreationDate: PromiseOrValue<BigNumberish>,
+      workerDeadline: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     cancelBounty(
       bountyId: PromiseOrValue<BigNumberish>,
@@ -451,6 +525,21 @@ export interface IWorkFi extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    calculateTotalYield(
+      initialValue: PromiseOrValue<BigNumberish>,
+      dailyYieldPercentage: PromiseOrValue<BigNumberish>,
+      daysBeforeInvestmentOpportunityCloses: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    calculateYieldPool(
+      workerNativePay: PromiseOrValue<BigNumberish>,
+      dailyYieldPercentage: PromiseOrValue<BigNumberish>,
+      bountyCreationDate: PromiseOrValue<BigNumberish>,
+      workerDeadline: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     cancelBounty(
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -515,6 +604,21 @@ export interface IWorkFi extends BaseContract {
     acceptWorkerPayment(
       bountyId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    calculateTotalYield(
+      initialValue: PromiseOrValue<BigNumberish>,
+      dailyYieldPercentage: PromiseOrValue<BigNumberish>,
+      daysBeforeInvestmentOpportunityCloses: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    calculateYieldPool(
+      workerNativePay: PromiseOrValue<BigNumberish>,
+      dailyYieldPercentage: PromiseOrValue<BigNumberish>,
+      bountyCreationDate: PromiseOrValue<BigNumberish>,
+      workerDeadline: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     cancelBounty(
