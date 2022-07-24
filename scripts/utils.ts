@@ -1,4 +1,5 @@
 import * as hre from "hardhat";
+import { DeadlineUtils, MathUtils } from "../typechain-types";
 
 export async function deployWithoutArguments(name: string, libraries?: any) {
 	const Factory = await hre.ethers.getContractFactory(name, {
@@ -8,6 +9,12 @@ export async function deployWithoutArguments(name: string, libraries?: any) {
 	await contract.deployed();
 	return contract;
 }
+
+// export interface WorkFiDeploymentResult {
+// 	MathUtils: MathUtils
+// 	DeadlineUtils: DeadlineUtils
+// 	BountyUtils: BountyUtils
+// }
 
 export async function deployWorkFi() {
 	const mathUtils = await deployWithoutArguments('MathUtils');
