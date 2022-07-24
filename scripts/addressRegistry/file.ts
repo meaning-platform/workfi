@@ -1,7 +1,7 @@
 import { writeFileSync } from "fs";
 import { AddressRegistry } from "./types";
 
-const ADDRESS_REGISTRY_FILE = './addresses.ts';
+const ADDRESS_REGISTRY_FILE = './addressRegistry.ts';
 
 export function writeAddressRegistryFile(registry: AddressRegistry) {
 	const content = generateAddressRegistryFileContent(registry);

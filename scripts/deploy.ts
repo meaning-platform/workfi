@@ -1,7 +1,7 @@
 import { deployWorkFiWithDependencies } from './utils';
 import * as hre from 'hardhat';
 import { writeAddressRegistryFile } from './addressRegistry/file';
-import { ADDRESS_REGISTRY } from './addressRegistry/addressRegistry';
+import { ADDRESS_REGISTRY } from '../addressRegistry';
 import { NetworkAddressRegistry } from './addressRegistry/types';
 
 async function main() {

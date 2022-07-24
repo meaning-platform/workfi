@@ -8,7 +8,7 @@ import { Approve } from '../components/Approve';
 import WorkFiArtifact from '../artifacts/contracts/WorkFi.sol/WorkFi.json';
 import { Web3Context } from '../context/web3Context';
 import { Web3ContextType } from '../types';
-import { ADDRESS_REGISTRY } from '../scripts/addressRegistry/addressRegistry';
+import { ADDRESS_REGISTRY } from '../addressRegistry';
 import { WorkFi } from '../typechain-types';
 import { getWhitelistedStablecoins } from '../utils/workFiUtils';
 
@@ -36,6 +36,8 @@ const CreateOpportunity: NextPage = () => {
 	if (!networkName) {
 		throw new Error('No Network name ??');
 	}
+	console.log(networkName);
+	console.log(JSON.stringify(ADDRESS_REGISTRY, null, 1));
 	const opportunityContractAddress = ADDRESS_REGISTRY.networks[networkName].workFi;
 	// TODO zoz: double check
 	const opportunityContract = new ethers.Contract(opportunityContractAddress, WorkFiArtifact.abi, Web3.Signer) as WorkFi;
