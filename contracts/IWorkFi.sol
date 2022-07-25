@@ -68,7 +68,7 @@ interface IWorkFi {
 		uint96 exchangeRate,
 		address nativeToken,
 		address stablecoin,
-		uint256 dailyYieldPercentage,
+		uint128 dailyYieldPercentage,
 		uint256 workerDeadline
 	) external payable returns (uint256);
 

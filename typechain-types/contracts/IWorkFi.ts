@@ -105,7 +105,6 @@ export interface IWorkFiInterface extends utils.Interface {
     "invest(uint256,uint128)": FunctionFragment;
     "markBountyAsCompleted(uint256)": FunctionFragment;
     "removeStablecoinFromWhitelist(address)": FunctionFragment;
-    "withdrawInvestments(uint256)": FunctionFragment;
   };
 
   getFunction(
@@ -124,7 +123,6 @@ export interface IWorkFiInterface extends utils.Interface {
       | "invest"
       | "markBountyAsCompleted"
       | "removeStablecoinFromWhitelist"
-      | "withdrawInvestments"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -200,10 +198,6 @@ export interface IWorkFiInterface extends utils.Interface {
     functionFragment: "removeStablecoinFromWhitelist",
     values: [PromiseOrValue<string>]
   ): string;
-  encodeFunctionData(
-    functionFragment: "withdrawInvestments",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
 
   decodeFunctionResult(
     functionFragment: "acceptInvestorPayment",
@@ -253,10 +247,6 @@ export interface IWorkFiInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "removeStablecoinFromWhitelist",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "withdrawInvestments",
     data: BytesLike
   ): Result;
 
@@ -509,11 +499,6 @@ export interface IWorkFi extends BaseContract {
       stablecoin: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
-
-    withdrawInvestments(
-      bountyId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
   };
 
   acceptInvestorPayment(
@@ -600,11 +585,6 @@ export interface IWorkFi extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  withdrawInvestments(
-    bountyId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   callStatic: {
     acceptInvestorPayment(
       bountyId: PromiseOrValue<BigNumberish>,
@@ -687,11 +667,6 @@ export interface IWorkFi extends BaseContract {
 
     removeStablecoinFromWhitelist(
       stablecoin: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    withdrawInvestments(
-      bountyId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -866,11 +841,6 @@ export interface IWorkFi extends BaseContract {
       stablecoin: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
-
-    withdrawInvestments(
-      bountyId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -955,11 +925,6 @@ export interface IWorkFi extends BaseContract {
 
     removeStablecoinFromWhitelist(
       stablecoin: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    withdrawInvestments(
-      bountyId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };

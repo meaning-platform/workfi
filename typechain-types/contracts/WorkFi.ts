@@ -109,7 +109,6 @@ export interface WorkFiInterface extends utils.Interface {
     "removeStablecoinFromWhitelist(address)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
-    "withdrawInvestments(uint256)": FunctionFragment;
   };
 
   getFunction(
@@ -132,7 +131,6 @@ export interface WorkFiInterface extends utils.Interface {
       | "removeStablecoinFromWhitelist"
       | "renounceOwnership"
       | "transferOwnership"
-      | "withdrawInvestments"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -221,10 +219,6 @@ export interface WorkFiInterface extends utils.Interface {
     functionFragment: "transferOwnership",
     values: [PromiseOrValue<string>]
   ): string;
-  encodeFunctionData(
-    functionFragment: "withdrawInvestments",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
 
   decodeFunctionResult(
     functionFragment: "INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT",
@@ -287,10 +281,6 @@ export interface WorkFiInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "withdrawInvestments",
     data: BytesLike
   ): Result;
 
@@ -572,11 +562,6 @@ export interface WorkFi extends BaseContract {
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
-
-    withdrawInvestments(
-      bountyId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
   };
 
   INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT(
@@ -678,11 +663,6 @@ export interface WorkFi extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  withdrawInvestments(
-    bountyId: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   callStatic: {
     INVESTMENT_OPPORTUNITY_DURATION_PERCENTAGE_IN_BASIS_POINT(
       overrides?: CallOverrides
@@ -778,11 +758,6 @@ export interface WorkFi extends BaseContract {
 
     transferOwnership(
       newOwner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    withdrawInvestments(
-      bountyId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -981,11 +956,6 @@ export interface WorkFi extends BaseContract {
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
-
-    withdrawInvestments(
-      bountyId: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -1085,11 +1055,6 @@ export interface WorkFi extends BaseContract {
 
     transferOwnership(
       newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    withdrawInvestments(
-      bountyId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };

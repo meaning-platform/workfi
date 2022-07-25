@@ -653,19 +653,6 @@ const _abi = [
     stateMutability: "nonpayable",
     type: "function",
   },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "bountyId",
-        type: "uint256",
-      },
-    ],
-    name: "withdrawInvestments",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
 ];
 
 export class IWorkFi__factory {

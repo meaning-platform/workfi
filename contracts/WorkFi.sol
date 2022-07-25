@@ -13,7 +13,8 @@ import '@openzeppelin/contracts/utils/Address.sol';
 // TODO: Switch to a yield per second model.
 // That way, whenever an investor invests, we can update a secodns yield for the entire gorup of investors
 // and use that to calculate how much of the yield pool has been earned by investors and how much the 
-// recruiter can get back
+// recruiter can get back.
+// This makes it possible because everyone earns a yield at the same time: every second.
 // TODO: If worker not found after worker deadline, everyone egts refunded but yield goes to investors because of the risk
 // TODO: tests for unhappy paths (errors etc)
 // TODO: Check arithmetic operations

@@ -38,8 +38,6 @@ export type { TokenInfo } from "./@superfluid-finance/ethereum-contracts/contrac
 export { TokenInfo__factory } from "./factories/@superfluid-finance/ethereum-contracts/contracts/interfaces/tokens/TokenInfo__factory";
 export type { DeadlineUtils } from "./contracts/DeadlineUtils";
 export { DeadlineUtils__factory } from "./factories/contracts/DeadlineUtils__factory";
-export type { Greeter } from "./contracts/Greeter";
-export { Greeter__factory } from "./factories/contracts/Greeter__factory";
 export type { IWorkFi } from "./contracts/IWorkFi";
 export { IWorkFi__factory } from "./factories/contracts/IWorkFi__factory";
 export type { MathUtils } from "./contracts/MathUtils";
