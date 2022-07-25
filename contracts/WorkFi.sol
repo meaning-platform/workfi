@@ -255,6 +255,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 	}
 
 	// TODO: Write tests
+	// TODO Fwoued: How do we prevent recruiters from cancelling bounties when the worker completed worker and get their money refunded ?
 	function cancelBounty(uint256 bountyId) external override {
 		if (bountyId > bounties.length) {
 			revert BountyDoesNotExist();
@@ -263,9 +264,6 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		BountyMetadata storage bounty = bounties[bountyId - 1];
 		if (msg.sender != bounty.recruiter) {
 			revert NotRecruiter();
-		}
-		if (bounty.status != BountyStatus.Ongoing) {
-			revert BountyIsNotOngoing();
 		}
 
 		// get stable the recruiter has put on the bounty
