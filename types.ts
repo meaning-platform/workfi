@@ -1,4 +1,6 @@
 import { ethers } from 'ethers'
+import { ApolloClient } from '@apollo/client'
+
 
 export interface Account {
     address: string
@@ -7,9 +9,14 @@ export interface Account {
   }
 
 
-  export type Web3ContextType = {
-    Account: Account | null;
-    Provider: ethers.providers.Web3Provider | null | undefined;
-    Signer: ethers.Signer;
-  };
+export type Web3ContextType = {
+  Account: Account | null;
+  Provider: ethers.providers.Web3Provider | null | undefined;
+  Signer: ethers.Signer;
+};
+
+export type lensContextType = {
+  Client: ApolloClient<any> | null | undefined;
+  login: (address: string) => void;
+};
   

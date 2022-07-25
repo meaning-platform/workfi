@@ -1,4 +1,8 @@
+import React from 'react';
 import { useConnectWallet } from '@web3-onboard/react'
+import { lensContextType, Web3ContextType } from '../types';
+import { LensContext } from '../context/lensContext';
+import { Web3Context } from '../context/web3Context';
 
 import { useIsMounted } from '../components/hooks/useIsMounted';
 import Link from 'next/link';
@@ -10,6 +14,19 @@ type Props = {
 export default function Layout({ children }: Props) {
 	const isMounted = useIsMounted();
 	const [{ wallet, connecting }, connect, disconnect] = useConnectWallet()
+	const Lens = React.useContext(LensContext) as lensContextType;
+	const Web3 = React.useContext(Web3Context) as Web3ContextType;
+
+	const connectWallet = async () => {
+		
+		console.log('trying to connect wallet')
+		await connect();
+		console.log('connected wallet')
+		console.log('Lens',Lens)
+		console.log('web3 wallet', await Web3.Signer?.getAddress())
+		console.log('address', wallet?.accounts[0].address)
+		Lens.login(await Web3.Signer?.getAddress() || '')
+	}
 
 	return (
 		<div className="min-h-full bg-stone-50">
@@ -49,7 +66,7 @@ export default function Layout({ children }: Props) {
 						<button
 								className="mt-6 inline-flex items-center justify-center rounded-md border border-transparent bg-emerald-600 py-2 px-4 font-bold text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 md:mt-0"
 								disabled={connecting}
-								onClick={() => (wallet ? disconnect(wallet) : connect())}
+								onClick={() => (wallet ? disconnect(wallet) : connectWallet())}
 							>
 								{connecting ? 'connecting' : wallet ? 'disconnect' : 'connect'}
 							</button>

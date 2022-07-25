@@ -1,9 +1,8 @@
 // context/themeContext.tsx
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { init, useConnectWallet, useAccountCenter } from '@web3-onboard/react'
-import { Account, Web3ContextType, Contracts } from '../types';
+import { Account, Web3ContextType, } from '../types';
 import injectedModule from '@web3-onboard/injected-wallets'
-import useState from 'react-usestateref';
 import { ethers } from 'ethers'
 
 export const Web3Context = React.createContext<Web3ContextType | null>(null);
@@ -69,9 +68,9 @@ updateAccountCenter({minimal: true})
 
 const Web3Provider: React.FC<React.ReactNode> = ({ children }) => {
     const [{ wallet, connecting }, connect, disconnect] = useConnectWallet()
-    const [injectedProvider, setInjectedProvider, injectedProviderRef] = useState<ethers.providers.Web3Provider | null>()
+    const [injectedProvider, setInjectedProvider] = useState<ethers.providers.Web3Provider | null>()
     const [account, setAccount] = useState<Account | null>(null)
-    const [signer, setSigner] = useState<Contracts | null>(null)
+    const [signer, setSigner] = useState<ethers.Signer | null>(null)
 
     // create an ethers provider
     useEffect(() => {
@@ -132,7 +131,7 @@ const Web3Provider: React.FC<React.ReactNode> = ({ children }) => {
                 setSigner(null);
                 }else{
                 const signer = await provider.getSigner();
-                setSigner(signer);
+                setSigner(signer.);
                 return signer
             }
         }

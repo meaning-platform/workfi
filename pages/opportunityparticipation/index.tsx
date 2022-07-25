@@ -1,10 +1,14 @@
+import React,{ useEffect, useState } from 'react';
+import { ethers } from 'ethers';
 import type { NextPage } from 'next/types';
 import type { LoanOpportunity } from '../api/data/LoanOpportunity';
 import { defaultBounty } from '../api/data/mockData';
-import { useEffect, useState } from 'react';
 import { Approve } from '../../components/Approve';
+import { Web3ContextType, } from '../../types';
 import DummyWorkFi from '../../artifacts/contracts/DummyWorkFi.sol/DummyWorkFi.json';
 import { contractAddressMumbai } from '../../config';
+import { Web3Context } from '../../context/web3Context';
+
 
 //Opportunity Participation Form
 const OpportunityParticipation: NextPage = () => {
@@ -35,18 +39,11 @@ const OpportunityParticipation: NextPage = () => {
 		}
 	}
 
-	const { write, data, error, isLoading, isError, isSuccess } = useContractWrite(
-		{
-			addressOrName: contractAddressMumbai,
-			contractInterface: DummyWorkFi.abi,
-		},
-		'invest'
-	);
 
-	const [callSmartContract, setCallSmartContract] = useState<(overrideConfig?: WriteContractConfig | undefined) => void>(() => {});
+	const [callSmartContract, setCallSmartContract] = useState<() => void>(() => {});
 	useEffect(()=>{
 		setCallSmartContract(() => {
-			return () => {
+			return async () => {
 				const bountyId = opportunity.idBounty;
 				const stableAmount = opportunity.stableAmount;
 				let trx = await opportunityContract.invest(bountyId, stableAmount);

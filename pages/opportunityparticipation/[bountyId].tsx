@@ -8,8 +8,8 @@ import DummyWorkFi from '../../artifacts/contracts/DummyWorkFi.sol/DummyWorkFi.j
 import { contractAddressMumbai } from '../../config';
 import { ethers } from 'ethers';
 import { Bounty, Status } from '../api/data/Bounty';
-import { Web3Context } from '../context/web3Context';
-import { Web3ContextType } from '../types';
+import { Web3Context } from '../../context/web3Context';
+import { Web3ContextType } from '../../types';
 
 interface Props {
 	bounty: Bounty
