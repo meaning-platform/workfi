@@ -10,6 +10,10 @@ import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
 
+// TODO: Switch to a yield per second model.
+// That way, whenever an investor invests, we can update a secodns yield for the entire gorup of investors
+// and use that to calculate how much of the yield pool has been earned by investors and how much the 
+// recruiter can get back
 // TODO: If worker not found after worker deadline, everyone egts refunded but yield goes to investors because of the risk
 // TODO: tests for unhappy paths (errors etc)
 // TODO: Check arithmetic operations
@@ -203,9 +207,10 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		for (uint256 i = 0; i < investments[bountyId][msg.sender].length; i++) {
 			uint128 stableAmount = investments[bountyId][msg.sender][i].stableAmount;
 			uint256 creationDate = investments[bountyId][msg.sender][i].creationDate;
-			uint128 workerNativePayGoingToTheInvestor = getNativePayFromStable(stableAmount, bounty.exchangeRate);
+			uint128 workerNativePayGoingToTheInvestor = bounty.status == BountyStatus.Completed
+				? getNativePayFromStable(stableAmount, bounty.exchangeRate)
+				: 0;
 			uint128 daysInvested = DeadlineUtils.getDaysBeforeDate(creationDate, investmentOpportunityEndDate);
-
 			payment +=
 				workerNativePayGoingToTheInvestor +
 				_calculateTotalYield(workerNativePayGoingToTheInvestor, bounty.dailyYieldPercentage, daysInvested);
@@ -240,13 +245,14 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		if (msg.sender != bounty.recruiter) {
 			revert NotRecruiter();
 		}
-
 		if (bounty.worker == address(0)) {
 			revert WorkerCannotBeZero();
 		}
-
 		if (bounty.status != BountyStatus.Ongoing) {
 			revert BountyIsNotOngoing();
+		}
+		if (bounty.workerDeadline < block.timestamp) {
+			revert WorkerDeadlineExpired();
 		}
 
 		bounty.status = BountyStatus.Completed;
@@ -271,7 +277,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		// refund that
 		bounty.status = BountyStatus.Cancelled;
 		bounty.setWorkerPayToZero();
-
+		// TODO: Only take yield that investors do not win. How do we make that safe and performant gas-wise ?
 		uint128 yieldPool = _calculateYieldPool(
 			bounty.initialWorkerNativePay,
 			bounty.dailyYieldPercentage,
@@ -284,29 +290,6 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		sendNativeToken(bounty.nativeToken, bounty.recruiter, bounty.initialWorkerNativePay + yieldPool);
 		IERC20 stablecoin = IERC20(bounty.stablecoin);
 		stablecoin.transfer(bounty.recruiter, bounty.initialWorkerStablePay);
-	}
-
-	// TODO: Write tests
-	function withdrawInvestments(uint256 bountyId) external override {
-		BountyMetadata storage bounty = bounties[bountyId - 1];
-		if (bounty.status != BountyStatus.Cancelled) {
-			revert BountyIsNotCancelled();
-		}
-		if (investments[bountyId][msg.sender].length == 0) {
-			revert NotAnInvestor();
-		}
-
-		// TODO: Max amount of investments to prevent large loops ? Only blocks the investor itself though. Or maybe allow interacting with 1 investment at a time or batches of them. Or maybe allow interacting with 1 investment at a time or batches of them. Or maybe allow interacting with 1 investment at a time or batches of them
-		uint128 stableInvestment = 0;
-		for (uint256 i = 0; i < investments[bountyId][msg.sender].length; i++) {
-			stableInvestment += investments[bountyId][msg.sender][i].stableAmount;
-		}
-		delete investments[bountyId][msg.sender];
-
-		emit InvestmentsWithdrawn(bountyId);
-
-		IERC20 stablecoinContract = IERC20(bounty.stablecoin);
-		stablecoinContract.transfer(msg.sender, stableInvestment);
 	}
 
 	/////////////////
@@ -369,6 +352,7 @@ contract WorkFi is IWorkFi, ReentrancyGuard, Ownable {
 		return _calculateTotalYield(initialValue, dailyYieldPercentage, daysBeforeInvestmentOpportunityCloses);
 	}
 
+	// TODO: Dont we want it to compound ?
 	function _calculateTotalYield(
 		uint128 initialValue,
 		uint128 dailyYieldPercentage,

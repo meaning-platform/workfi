@@ -10,11 +10,19 @@ library BountyUtils {
 		bounty.workerNativePay = 0;
 	}
 
-	function isInvestmentOpportunityClosed(BountyMetadata storage bounty, uint256 investmentOpportunityPercentage) external view returns (bool) {
+	function isInvestmentOpportunityClosed(BountyMetadata storage bounty, uint256 investmentOpportunityPercentage)
+		external
+		view
+		returns (bool)
+	{
 		return
 			bounty.status == BountyStatus.WorkerHasBeenPaid ||
-			(bounty.status == BountyStatus.Completed &&
-				block.timestamp >= DeadlineUtils.getInvestmentOpportunityDeadline(bounty.creationDate, bounty.workerDeadline, investmentOpportunityPercentage));
+			bounty.status == BountyStatus.Cancelled ||
+			block.timestamp >=
+			DeadlineUtils.getInvestmentOpportunityDeadline(
+				bounty.creationDate,
+				bounty.workerDeadline,
+				investmentOpportunityPercentage
+			);
 	}
-
 }

@@ -68,7 +68,7 @@ interface IWorkFi {
 		uint96 exchangeRate,
 		address nativeToken,
 		address stablecoin,
-		uint128 dailyYieldPercentage,
+		uint256 dailyYieldPercentage,
 		uint256 workerDeadline
 	) external payable returns (uint256);
 
@@ -78,7 +78,12 @@ interface IWorkFi {
 	/// Called by the worker to receive payment. This also closes the investment opportunity.
 	function acceptWorkerPayment(uint256 bountyId) external;
 
-	/// Called by am investor to receive payment. Can only be called once the investment opportunity has been closed.
+	/// Called by am investor to receive payment. 
+	/// Can only be called once the investment opportunity has been closed.
+	/// An investment opportunity is closed when one of the following happened:
+	/// - the worker has been paid
+	/// - the investment deadline has passed
+	/// - the bounty has been cancelled
 	function acceptInvestorPayment(uint256 bountyId) external;
 
 	///  Marks the bounty as completed by the recruiter, unlocking withdrawal.
@@ -86,9 +91,6 @@ interface IWorkFi {
 
 	// Cancel the bounty, returning to everyone the tokens they invested
 	function cancelBounty(uint256 bountyId) external;
-
-	// Withdraw investments from a cancelled bounty
-	function withdrawInvestments(uint256 bountyId) external;
 
 	/////////////////
 	// VIEW FUNCTIONS
