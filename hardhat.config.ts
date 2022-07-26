@@ -6,6 +6,7 @@ import './tasks/deployMockERC20';
 import './tasks/populateWithTokens';
 import './tasks/whitelistAdd';
 import './tasks/whitelistRemove';
+import './tasks/getWhitelistedStablecoins';
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
