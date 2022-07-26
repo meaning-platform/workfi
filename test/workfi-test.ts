@@ -219,7 +219,7 @@ describe("WorkFi", function () {
          bountyCreationDate,
          workerDeadline
       );
-      
+
       expect(yieldPool).to.eq(expectedYield);
    });
 
@@ -295,7 +295,7 @@ describe("WorkFi", function () {
       const bounty = await workFi.getBounty(bountyId);
       const yieldPool = await workFi.calculateYieldPool(
          nativePay,
-         dailyYield, 
+         dailyYield,
          bounty.creationDate,
          deadline
       );
@@ -321,6 +321,34 @@ describe("WorkFi", function () {
       expect(event.args.payment).to.eq(expectedInvestorPayment);
    });
 
+   it('emits a StablecoinAddedToWhitelist event when calling addStablecoinToWhitelist', async () => {
+      const { workFi } = await deployWorkFiWithDependencies();
+      const MockErc20 = await hre.ethers.getContractFactory('MockERC20');
+      const stablecoin = await MockErc20.deploy('StableCoin', 'SC');
+      await stablecoin.deployed();
+
+      await (await workFi.addStablecoinToWhitelist(stablecoin.address)).wait();
+      
+      const filter = workFi.filters.StablecoinAddedToWhitelist();
+      const events = await workFi.queryFilter(filter);
+      expect(events.length).to.eq(1);
+      expect(events[0].args.stablecoin).to.eq(stablecoin.address);
+   });
+
+   it('emits a StablecoinRemovedFromWhitelist event when calling addStablecoinToWhitelist', async () => {
+      const { workFi } = await deployWorkFiWithDependencies();
+      const MockErc20 = await hre.ethers.getContractFactory('MockERC20');
+      const stablecoin = await MockErc20.deploy('StableCoin', 'SC');
+      await stablecoin.deployed();
+
+      await (await workFi.addStablecoinToWhitelist(stablecoin.address)).wait();
+      await (await workFi.removeStablecoinFromWhitelist(stablecoin.address)).wait();
+      
+      const filter = workFi.filters.StablecoinRemovedFromWhitelist();
+      const events = await workFi.queryFilter(filter);
+      expect(events.length).to.eq(1);
+      expect(events[0].args.stablecoin).to.eq(stablecoin.address);
+   });
 });
 
 
