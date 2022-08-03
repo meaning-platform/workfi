@@ -16,7 +16,7 @@ npx hardhat run scripts/deploy.ts --network localhost
 
 To start with two ERC20 tokens, one being a whitelisted stablecoin, run
 ```
-npx hardhat populateWithTokens
+npx hardhat populateWithTokens --network localhost
 ```
 
 Feel free to take a look at the other hardhat tasks as well.
